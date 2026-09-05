@@ -480,3 +480,12 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+# Local Ember database
+*.db
+*.db-shm
+*.db-wal
+
+# Local environment secrets
+.env
+.env.*
+!.env.example
