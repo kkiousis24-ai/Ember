@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import AuthScreen from './components/AuthScreen'
+import { getCurrentUser, logout, type AuthUser } from './services/auth'
 import './App.css'
 
 const navigation = [
@@ -45,9 +47,32 @@ const transactions = [
 ]
 
 function App() {
+    const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
+  const [checkingSession, setCheckingSession] = useState(true)
   const [darkMode, setDarkMode] = useState(true)
   const [activePage, setActivePage] = useState('Επισκόπηση')
+  useEffect(() => {
+    getCurrentUser()
+      .then(setCurrentUser)
+      .catch(() => setCurrentUser(null))
+      .finally(() => setCheckingSession(false))
+  }, [])
 
+  async function handleLogout() {
+    try {
+      await logout()
+    } finally {
+      setCurrentUser(null)
+    }
+  }
+
+  if (checkingSession) {
+    return <div className="session-loading">Φόρτωση Ember...</div>
+  }
+
+  if (!currentUser) {
+    return <AuthScreen onAuthenticated={setCurrentUser} />
+  }
   const dashboard = (
     <>
       <section className="balance-section">
@@ -240,7 +265,10 @@ function App() {
             <span>⚙</span>
             Ρυθμίσεις
           </button>
-
+<button className="nav-item" onClick={handleLogout}>
+  <span>↪</span>
+  Αποσύνδεση
+</button>
           <div className="profile">
             <div className="avatar">KK</div>
             <div>

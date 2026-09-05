@@ -897,3 +897,11 @@ main > * {
   display: none;
   content: none;
 }
+.session-loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: #ff8a4c;
+  background: #0b0c0e;
+  font-size: 13px;
+}

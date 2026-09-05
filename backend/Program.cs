@@ -63,7 +63,51 @@ app.MapControllers();
 
 app.MapGroup("/api/auth")
     .MapIdentityApi<ApplicationUser>();
+app.MapGet("/api/auth/me", async (
+    HttpContext httpContext,
+    UserManager<ApplicationUser> userManager) =>
+{
+    var user = await userManager.GetUserAsync(httpContext.User);
 
+    if (user is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var now = DateTime.UtcNow;
+
+    var trialDaysRemaining = Math.Max(
+        0,
+        (int)Math.Ceiling((user.TrialEndsAtUtc - now).TotalDays));
+
+    var hasActiveAccess = user.Plan == SubscriptionPlan.Trial
+        ? user.TrialEndsAtUtc > now
+        : user.SubscriptionEndsAtUtc is null ||
+          user.SubscriptionEndsAtUtc > now;
+
+    return Results.Ok(new
+    {
+        user.Id,
+        user.Email,
+        user.FullName,
+        plan = user.Plan.ToString(),
+        user.TrialEndsAtUtc,
+        user.SubscriptionEndsAtUtc,
+        trialDaysRemaining,
+        hasActiveAccess,
+        user.PreferredLanguage,
+        user.PreferredTheme
+    });
+})
+.RequireAuthorization();
+
+app.MapPost("/api/auth/logout", async (
+    SignInManager<ApplicationUser> signInManager) =>
+{
+    await signInManager.SignOutAsync();
+    return Results.NoContent();
+})
+.RequireAuthorization();
 app.MapGet("/api/health", () =>
     Results.Ok(new
     {
