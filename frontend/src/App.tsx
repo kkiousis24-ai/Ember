@@ -1,121 +1,193 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
 import './App.css'
 
+const menuItems = [
+  { icon: '⌂', label: 'Επισκόπηση' },
+  { icon: '↔', label: 'Συναλλαγές' },
+  { icon: '◎', label: 'Προϋπολογισμοί' },
+  { icon: '◇', label: 'Αποταμίευση' },
+  { icon: '♙', label: 'Ομάδα' },
+  { icon: '□', label: 'Συναντήσεις' },
+  { icon: '▥', label: 'Αναφορές' },
+]
+
+const chartData = [
+  { month: 'Απρ', value: 48 },
+  { month: 'Μάι', value: 64 },
+  { month: 'Ιούν', value: 55 },
+  { month: 'Ιούλ', value: 78 },
+  { month: 'Αύγ', value: 68 },
+  { month: 'Σεπ', value: 88 },
+]
+
+const transactions = [
+  { name: 'Vodafone Business', type: 'Έσοδο', amount: '+€1.850', positive: true },
+  { name: 'Adobe Creative Cloud', type: 'Λογισμικό', amount: '-€36,89', positive: false },
+  { name: 'Γραφείο Αθηνών', type: 'Ενοίκιο', amount: '-€620', positive: false },
+]
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [activeItem, setActiveItem] = useState('Επισκόπηση')
+  const [darkMode, setDarkMode] = useState(true)
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className={`ember-app ${darkMode ? 'dark' : 'light'}`}>
+      <aside className="sidebar">
+        <div className="brand">
+          <div className="brand-icon">🔥</div>
+          <div>
+            <strong>Ember</strong>
+            <span>Burn & Cash Flow</span>
+          </div>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
+
+        <nav className="navigation">
+          <p className="nav-title">ΚΕΝΤΡΙΚΟ ΜΕΝΟΥ</p>
+
+          {menuItems.map((item) => (
+            <button
+              key={item.label}
+              className={activeItem === item.label ? 'nav-item active' : 'nav-item'}
+              onClick={() => setActiveItem(item.label)}
+            >
+              <span>{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="trial-card">
+          <span>ΔΩΡΕΑΝ ΔΟΚΙΜΗ</span>
+          <strong>14 ημέρες</strong>
+          <p>Ανακάλυψε όλες τις δυνατότητες της Ember.</p>
+          <button>Δες τα πακέτα</button>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+
+        <button className="settings-button">
+          <span>⚙</span>
+          Ρυθμίσεις
         </button>
-      </section>
+      </aside>
 
-      <div className="ticks"></div>
+      <main className="main-content">
+        <header className="topbar">
+          <div>
+            <p className="eyebrow">ΟΙΚΟΝΟΜΙΚΗ ΕΙΚΟΝΑ</p>
+            <h1>Καλησπέρα, Κώστα</h1>
+            <span>Δες πώς κινείται η επιχείρησή σου σήμερα.</span>
+          </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          <div className="topbar-actions">
+            <button className="language-button">EL</button>
+            <button
+              className="theme-button"
+              onClick={() => setDarkMode(!darkMode)}
+              aria-label="Αλλαγή θέματος"
+            >
+              {darkMode ? '☀' : '☾'}
+            </button>
+            <div className="avatar">KK</div>
+          </div>
+        </header>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        <section className="summary-grid">
+          <article className="summary-card">
+            <span>Συνολικό υπόλοιπο</span>
+            <strong>€12.480,20</strong>
+            <small className="positive">↑ 8,4% αυτόν τον μήνα</small>
+          </article>
+
+          <article className="summary-card">
+            <span>Μηνιαία έσοδα</span>
+            <strong>€5.240,00</strong>
+            <small className="positive">↑ 12,1% από τον Αύγουστο</small>
+          </article>
+
+          <article className="summary-card">
+            <span>Μηνιαία έξοδα</span>
+            <strong>€2.180,45</strong>
+            <small className="negative">↓ 3,2% από τον Αύγουστο</small>
+          </article>
+
+          <article className="summary-card accent-card">
+            <span>Καθαρή ροή</span>
+            <strong>+€3.059,55</strong>
+            <small>Η οικονομική σου εικόνα είναι θετική</small>
+          </article>
+        </section>
+
+        <section className="dashboard-grid">
+          <article className="panel cashflow-panel">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">ΑΝΑΛΥΣΗ</p>
+                <h2>Ταμειακή ροή</h2>
+              </div>
+              <button>Τελευταίοι 6 μήνες⌄</button>
+            </div>
+
+            <div className="chart">
+              {chartData.map((item) => (
+                <div className="bar-column" key={item.month}>
+                  <div className="bar-track">
+                    <div className="bar" style={{ height: `${item.value}%` }} />
+                  </div>
+                  <span>{item.month}</span>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="panel budget-panel">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">ΣΤΟΧΟΣ ΜΗΝΑ</p>
+                <h2>Προϋπολογισμός</h2>
+              </div>
+              <strong>68%</strong>
+            </div>
+
+            <div className="budget-ring">
+              <div>
+                <strong>€2.180</strong>
+                <span>από €3.200</span>
+              </div>
+            </div>
+
+            <p className="budget-message">
+              Σου απομένουν <strong>€1.020</strong> για αυτόν τον μήνα.
+            </p>
+          </article>
+        </section>
+
+        <section className="panel transactions-panel">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">ΠΡΟΣΦΑΤΗ ΔΡΑΣΤΗΡΙΟΤΗΤΑ</p>
+              <h2>Τελευταίες συναλλαγές</h2>
+            </div>
+            <button>Προβολή όλων →</button>
+          </div>
+
+          <div className="transactions-list">
+            {transactions.map((transaction) => (
+              <div className="transaction-row" key={transaction.name}>
+                <div className="transaction-icon">
+                  {transaction.positive ? '↗' : '↘'}
+                </div>
+                <div className="transaction-info">
+                  <strong>{transaction.name}</strong>
+                  <span>{transaction.type}</span>
+                </div>
+                <strong className={transaction.positive ? 'positive' : ''}>
+                  {transaction.amount}
+                </strong>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
   )
 }
 
