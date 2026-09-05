@@ -10,4 +10,6 @@ public sealed class EmberDbContext : IdentityDbContext<ApplicationUser>
         : base(options)
     {
     }
+
+    public DbSet<Transaction> Transactions => Set<Transaction>();
 }
