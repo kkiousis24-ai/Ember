@@ -118,6 +118,14 @@ const englishText: Record<string, string> = {
   'Διαγραφή συναλλαγής': 'Delete transaction',
   υπόλοιπο: 'remaining',
   'Πρόοδος προϋπολογισμού': 'Budget progress',
+  'ΑΝΑΛΥΣΗ': 'ANALYTICS',
+  'Ανάλυση εξόδων': 'Expense analysis',
+  'Έξοδα ανά κατηγορία': 'Expenses by category',
+  'Δεν υπάρχουν έξοδα για ανάλυση.': 'There are no expenses to analyze yet.',
+  'Συνολικές συναλλαγές': 'Total transactions',
+  'Μέσο έξοδο': 'Average expense',
+  'Μεγαλύτερη κατηγορία': 'Top category',
+  'Καμία κατηγορία': 'No category',
   'Αναζήτηση συναλλαγών': 'Search transactions',
   'Φίλτρο τύπου συναλλαγής': 'Filter transaction type',
   'Περιγραφή': 'Description',
@@ -712,6 +720,24 @@ function App() {
       .includes(normalizedSearch)
   })
 
+  const expenseByCategory = transactions
+    .filter((transaction) => transaction.type === 2)
+    .reduce<Record<string, number>>((totals, transaction) => {
+      const category = transaction.category || 'Άλλο'
+      totals[category] = (totals[category] ?? 0) + transaction.amount
+      return totals
+    }, {})
+
+  const reportCategories = Object.entries(expenseByCategory).sort(
+    ([, firstAmount], [, secondAmount]) => secondAmount - firstAmount,
+  )
+  const largestCategory = reportCategories[0]
+  const averageExpense = totalExpense / Math.max(1, transactions.filter((transaction) => transaction.type === 2).length)
+  const maxCategoryAmount = Math.max(
+    1,
+    ...reportCategories.map(([, amount]) => amount),
+  )
+
   function renderTransactionRow(transaction: Transaction) {
     return (
       <div className="transaction" key={transaction.id}>
@@ -1006,6 +1032,67 @@ function App() {
           filteredTransactions.map(renderTransactionRow)}
       </div>
     </section>
+  )
+
+  const reportsPage = (
+    <>
+      <section className="balance-section reports-header">
+        <div>
+          <span className="section-label">{t('ΑΝΑΛΥΣΗ')}</span>
+          <h2>{t('Ανάλυση εξόδων')}</h2>
+          <p>{t('Έξοδα ανά κατηγορία')}</p>
+        </div>
+        <div className="report-period-pill">{currentMonthLabel}</div>
+      </section>
+
+      <section className="metrics">
+        <div className="metric">
+          <span>{t('Συνολικές συναλλαγές')}</span>
+          <strong>{transactions.length}</strong>
+          <small>{t('Αυτόν τον μήνα')}</small>
+        </div>
+        <div className="metric">
+          <span>{t('Μέσο έξοδο')}</span>
+          <strong>{formatCurrency(averageExpense)}</strong>
+          <small>{t('Έξοδα')}</small>
+        </div>
+        <div className="metric">
+          <span>{t('Μεγαλύτερη κατηγορία')}</span>
+          <strong>{largestCategory?.[0] ?? t('Καμία κατηγορία')}</strong>
+          <small>{largestCategory ? formatCurrency(largestCategory[1]) : '—'}</small>
+        </div>
+      </section>
+
+      <section className="panel report-panel">
+        <div className="panel-heading">
+          <div>
+            <span className="section-label">{t('ΑΝΑΛΥΣΗ')}</span>
+            <h3>{t('Έξοδα ανά κατηγορία')}</h3>
+          </div>
+          <strong className="report-total">{formatCurrency(totalExpense)}</strong>
+        </div>
+
+        {reportCategories.length === 0 ? (
+          <p className="transactions-empty">{t('Δεν υπάρχουν έξοδα για ανάλυση.')}</p>
+        ) : (
+          <div className="category-report-list">
+            {reportCategories.map(([category, amount]) => (
+              <div className="category-report-row" key={category}>
+                <div className="category-report-heading">
+                  <strong>{category}</strong>
+                  <span>{formatCurrency(amount)}</span>
+                </div>
+                <div className="category-report-track">
+                  <span
+                    style={{ width: `${(amount / maxCategoryAmount) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </>
   )
 
   const budgetsPage = (
@@ -1313,6 +1400,8 @@ function App() {
             ? transactionsPage
             : activePage === 'Προϋπολογισμοί'
               ? budgetsPage
+              : activePage === 'Αναφορές'
+                ? reportsPage
             : activePage === 'Ρυθμίσεις'
               ? settingsPage
               : (
