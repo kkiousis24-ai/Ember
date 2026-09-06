@@ -30,6 +30,8 @@ const cashFlow = [
   { month: 'Σεπ', income: 88, expense: 48 },
 ]
 
+type TransactionFilter = 'all' | 'income' | 'expense'
+
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('el-GR', {
     style: 'currency',
@@ -65,6 +67,9 @@ function App() {
   const [newTransaction, setNewTransaction] = useState(
     createEmptyTransaction(),
   )
+  const [transactionSearch, setTransactionSearch] = useState('')
+  const [transactionFilter, setTransactionFilter] =
+    useState<TransactionFilter>('all')
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null)
   const [isSavingTransaction, setIsSavingTransaction] = useState(false)
@@ -287,6 +292,74 @@ function App() {
   const displayName =
     currentUser.fullName || currentUser.email.split('@')[0]
 
+  const normalizedSearch = transactionSearch.trim().toLocaleLowerCase('el-GR')
+  const filteredTransactions = transactions.filter((transaction) => {
+    const matchesFilter =
+      transactionFilter === 'all' ||
+      (transactionFilter === 'income' && transaction.type === 1) ||
+      (transactionFilter === 'expense' && transaction.type === 2)
+
+    if (!matchesFilter) return false
+    if (!normalizedSearch) return true
+
+    return `${transaction.description} ${transaction.category}`
+      .toLocaleLowerCase('el-GR')
+      .includes(normalizedSearch)
+  })
+
+  function renderTransactionRow(transaction: Transaction) {
+    return (
+      <div className="transaction" key={transaction.id}>
+        <div
+          className={
+            transaction.type === 1
+              ? 'transaction-mark income'
+              : 'transaction-mark'
+          }
+        >
+          {transaction.type === 1 ? '↙' : '↗'}
+        </div>
+
+        <div className="transaction-name">
+          <strong>{transaction.description}</strong>
+          <span>
+            {transaction.category}{' · '}
+            <button
+              type="button"
+              className="text-button"
+              style={{ padding: 0, fontSize: 'inherit' }}
+              onClick={() => openEditTransactionForm(transaction)}
+              disabled={isSavingTransaction}
+              aria-label={`Επεξεργασία συναλλαγής: ${transaction.description}`}
+            >
+              Επεξεργασία
+            </button>
+          </span>
+        </div>
+
+        <span className="transaction-date">
+          {formatDate(transaction.occurredAtUtc)}
+        </span>
+
+        <strong
+          className={transaction.type === 1 ? 'amount income' : 'amount'}
+        >
+          {transaction.type === 1 ? '+' : '-'}
+          {formatCurrency(transaction.amount)}
+        </strong>
+
+        <button
+          className="delete-transaction"
+          onClick={() => handleDeleteTransaction(transaction.id)}
+          disabled={isSavingTransaction}
+          aria-label={`Διαγραφή συναλλαγής: ${transaction.description}`}
+        >
+          ×
+        </button>
+      </div>
+    )
+  }
+
   const dashboard = (
     <>
       <section className="balance-section">
@@ -438,61 +511,84 @@ function App() {
             </p>
           )}
 
-          {transactions.slice(0, 5).map((transaction) => (
-            <div className="transaction" key={transaction.id}>
-              <div
-                className={
-                  transaction.type === 1
-                    ? 'transaction-mark income'
-                    : 'transaction-mark'
-                }
-              >
-                {transaction.type === 1 ? '↙' : '↗'}
-              </div>
-
-              <div className="transaction-name">
-                <strong>{transaction.description}</strong>
-                <span>
-                  {transaction.category}{' · '}
-                  <button
-                    type="button"
-                    className="text-button"
-                    style={{ padding: 0, fontSize: 'inherit' }}
-                    onClick={() => openEditTransactionForm(transaction)}
-                    disabled={isSavingTransaction}
-                    aria-label={`Επεξεργασία συναλλαγής: ${transaction.description}`}
-                  >
-                    Επεξεργασία
-                  </button>
-                </span>
-              </div>
-
-              <span className="transaction-date">
-                {formatDate(transaction.occurredAtUtc)}
-              </span>
-
-              <strong
-                className={
-                  transaction.type === 1 ? 'amount income' : 'amount'
-                }
-              >
-                {transaction.type === 1 ? '+' : '-'}
-                {formatCurrency(transaction.amount)}
-              </strong>
-
-              <button
-                className="delete-transaction"
-                onClick={() => handleDeleteTransaction(transaction.id)}
-                disabled={isSavingTransaction}
-                aria-label="Διαγραφή συναλλαγής"
-              >
-                ×
-              </button>
-            </div>
-          ))}
+          {transactions.slice(0, 5).map(renderTransactionRow)}
         </div>
       </section>
     </>
+  )
+
+  const transactionsPage = (
+    <section className="panel transactions-page-panel">
+      <div className="panel-heading">
+        <div>
+          <span className="section-label">ΟΛΕΣ ΟΙ ΚΑΤΑΧΩΡΗΣΕΙΣ</span>
+          <h3>Συναλλαγές</h3>
+        </div>
+
+        <button
+          className="primary-button"
+          onClick={openCreateTransactionForm}
+          disabled={isSavingTransaction}
+        >
+          + Νέα συναλλαγή
+        </button>
+      </div>
+
+      <div className="transactions-toolbar">
+        <input
+          className="transaction-search"
+          value={transactionSearch}
+          onChange={(event) => setTransactionSearch(event.target.value)}
+          placeholder="Αναζήτηση περιγραφής ή κατηγορίας..."
+          aria-label="Αναζήτηση συναλλαγών"
+        />
+
+        <select
+          className="transaction-filter"
+          value={transactionFilter}
+          onChange={(event) =>
+            setTransactionFilter(event.target.value as TransactionFilter)
+          }
+          aria-label="Φίλτρο τύπου συναλλαγής"
+        >
+          <option value="all">Όλες</option>
+          <option value="income">Έσοδα</option>
+          <option value="expense">Έξοδα</option>
+        </select>
+      </div>
+
+      <div className="transaction-summary">
+        <div className="transaction-summary-card">
+          <span>Εμφανίζονται</span>
+          <strong>{filteredTransactions.length}</strong>
+        </div>
+        <div className="transaction-summary-card">
+          <span>Σύνολο εσόδων</span>
+          <strong className="income-text">{formatCurrency(totalIncome)}</strong>
+        </div>
+        <div className="transaction-summary-card">
+          <span>Σύνολο εξόδων</span>
+          <strong>{formatCurrency(totalExpense)}</strong>
+        </div>
+      </div>
+
+      <div className="transaction-list full-transaction-list">
+        {isLoadingTransactions && (
+          <p className="transactions-empty">Φόρτωση συναλλαγών...</p>
+        )}
+
+        {!isLoadingTransactions && filteredTransactions.length === 0 && (
+          <p className="transactions-empty">
+            {transactions.length === 0
+              ? 'Δεν υπάρχουν ακόμη συναλλαγές.'
+              : 'Δεν βρέθηκαν συναλλαγές με αυτά τα φίλτρα.'}
+          </p>
+        )}
+
+        {!isLoadingTransactions &&
+          filteredTransactions.map(renderTransactionRow)}
+      </div>
+    </section>
   )
 
   return (
@@ -591,9 +687,7 @@ function App() {
           </div>
         </header>
 
-        {activePage === 'Επισκόπηση' ? (
-          dashboard
-        ) : (
+        {activePage === 'Επισκόπηση' ? dashboard : activePage === 'Συναλλαγές' ? transactionsPage : (
           <section className="empty-page">
             <span>
               {navigation.find((item) => item.label === activePage)?.icon}
