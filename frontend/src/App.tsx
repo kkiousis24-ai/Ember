@@ -28,15 +28,6 @@ const navigation = [
   { icon: '≡', label: 'Αναφορές' },
 ]
 
-const cashFlow = [
-  { month: 'Απρ', income: 52, expense: 31 },
-  { month: 'Μάι', income: 66, expense: 42 },
-  { month: 'Ιούν', income: 58, expense: 36 },
-  { month: 'Ιούλ', income: 76, expense: 44 },
-  { month: 'Αύγ', income: 69, expense: 39 },
-  { month: 'Σεπ', income: 88, expense: 48 },
-]
-
 type TransactionFilter = 'all' | 'income' | 'expense'
 
 function formatCurrency(amount: number) {
@@ -51,6 +42,37 @@ function formatDate(value: string) {
     day: 'numeric',
     month: 'short',
   }).format(new Date(value))
+}
+
+function getLastSixMonths(transactions: Transaction[]) {
+  const now = new Date()
+
+  return Array.from({ length: 6 }, (_, index) => {
+    const monthDate = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (5 - index), 1),
+    )
+    const nextMonth = new Date(
+      Date.UTC(monthDate.getUTCFullYear(), monthDate.getUTCMonth() + 1, 1),
+    )
+
+    const monthTransactions = transactions.filter((transaction) => {
+      const occurredAt = new Date(transaction.occurredAtUtc)
+      return occurredAt >= monthDate && occurredAt < nextMonth
+    })
+
+    return {
+      month: new Intl.DateTimeFormat('el-GR', {
+        month: 'short',
+        timeZone: 'UTC',
+      }).format(monthDate),
+      income: monthTransactions
+        .filter((transaction) => transaction.type === 1)
+        .reduce((total, transaction) => total + transaction.amount, 0),
+      expense: monthTransactions
+        .filter((transaction) => transaction.type === 2)
+        .reduce((total, transaction) => total + transaction.amount, 0),
+    }
+  })
 }
 
 function createEmptyTransaction() {
@@ -465,6 +487,26 @@ function App() {
     .filter((transaction) => transaction.type === 2)
     .reduce((total, transaction) => total + transaction.amount, 0)
 
+  const now = new Date()
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+  const currentMonthTransactions = transactions.filter((transaction) => {
+    const occurredAt = new Date(transaction.occurredAtUtc)
+    return occurredAt >= currentMonthStart && occurredAt < nextMonthStart
+  })
+  const currentMonthIncome = currentMonthTransactions
+    .filter((transaction) => transaction.type === 1)
+    .reduce((total, transaction) => total + transaction.amount, 0)
+  const currentMonthExpense = currentMonthTransactions
+    .filter((transaction) => transaction.type === 2)
+    .reduce((total, transaction) => total + transaction.amount, 0)
+  const currentMonthNet = currentMonthIncome - currentMonthExpense
+  const cashFlow = getLastSixMonths(transactions)
+  const maxCashFlow = Math.max(
+    1,
+    ...cashFlow.flatMap((item) => [item.income, item.expense]),
+  )
+
   const netCashFlow = totalIncome - totalExpense
   const displayName =
     currentUser.fullName || currentUser.email.split('@')[0]
@@ -559,14 +601,14 @@ function App() {
     <>
       <section className="balance-section">
         <div>
-          <span className="section-label">ΔΙΑΘΕΣΙΜΟ ΥΠΟΛΟΙΠΟ</span>
-          <h2>{formatCurrency(12480.2 + netCashFlow)}</h2>
+          <span className="section-label">ΣΥΝΟΛΙΚΗ ΚΑΘΑΡΗ ΡΟΗ</span>
+          <h2>{formatCurrency(netCashFlow)}</h2>
           <p>
             <strong>
-              {netCashFlow >= 0 ? '+' : ''}
-              {formatCurrency(netCashFlow)}
+              {currentMonthNet >= 0 ? '+' : ''}
+              {formatCurrency(currentMonthNet)}
             </strong>{' '}
-            καθαρή ροή από τις καταχωρήσεις
+            καθαρή ροή τον τρέχοντα μήνα
           </p>
         </div>
 
@@ -585,21 +627,21 @@ function App() {
       <section className="metrics">
         <div className="metric">
           <span>Έσοδα</span>
-          <strong>{formatCurrency(totalIncome)}</strong>
+          <strong>{formatCurrency(currentMonthIncome)}</strong>
           <small className="up">Αυτόν τον μήνα</small>
         </div>
 
         <div className="metric">
           <span>Έξοδα</span>
-          <strong>{formatCurrency(totalExpense)}</strong>
+          <strong>{formatCurrency(currentMonthExpense)}</strong>
           <small>Αυτόν τον μήνα</small>
         </div>
 
         <div className="metric">
           <span>Καθαρή ροή</span>
-          <strong>{formatCurrency(netCashFlow)}</strong>
-          <small className={netCashFlow >= 0 ? 'up' : 'negative'}>
-            {netCashFlow >= 0 ? 'Θετική' : 'Αρνητική'}
+          <strong>{formatCurrency(currentMonthNet)}</strong>
+          <small className={currentMonthNet >= 0 ? 'up' : 'negative'}>
+            {currentMonthNet >= 0 ? 'Θετική' : 'Αρνητική'}
           </small>
         </div>
       </section>
@@ -630,11 +672,11 @@ function App() {
                 <div className="bars">
                   <span
                     className="income-bar"
-                    style={{ height: `${item.income}%` }}
+                    style={{ height: `${(item.income / maxCashFlow) * 100}%` }}
                   />
                   <span
                     className="expense-bar"
-                    style={{ height: `${item.expense}%` }}
+                    style={{ height: `${(item.expense / maxCashFlow) * 100}%` }}
                   />
                 </div>
                 <small>{item.month}</small>
@@ -646,7 +688,9 @@ function App() {
         <article className="panel month-panel">
           <div className="panel-heading">
             <div>
-              <span className="section-label">ΣΕΠΤΕΜΒΡΙΟΣ</span>
+              <span className="section-label">
+                {currentMonthLabel.toUpperCase()}
+              </span>
               <h3>Αυτόν τον μήνα</h3>
             </div>
             <button className="more-button">•••</button>
@@ -655,21 +699,25 @@ function App() {
           <div className="month-list">
             <div>
               <span>Προϋπολογισμός</span>
-              <strong>68%</strong>
+              <strong>{budgetUsagePercentage}%</strong>
             </div>
 
             <div className="progress">
-              <span />
+              <span
+                style={{
+                  width: `${Math.min(100, Math.max(0, budgetUsagePercentage))}%`,
+                }}
+              />
             </div>
 
             <div className="month-row">
-              <span>Εκτίμηση ΦΠΑ</span>
-              <strong>€742,30</strong>
+              <span>Έσοδα</span>
+              <strong>{formatCurrency(currentMonthIncome)}</strong>
             </div>
 
             <div className="month-row">
-              <span>Επόμενη πληρωμή</span>
-              <strong>12 Σεπ</strong>
+              <span>Έξοδα</span>
+              <strong>{formatCurrency(currentMonthExpense)}</strong>
             </div>
 
             <div className="month-row">
