@@ -68,7 +68,8 @@ app.Use(async (context, next) =>
     var isFinancialRequest =
         context.Request.Path.StartsWithSegments("/api/transactions") ||
         context.Request.Path.StartsWithSegments("/api/budgets") ||
-        context.Request.Path.StartsWithSegments("/api/goals");
+        context.Request.Path.StartsWithSegments("/api/goals") ||
+        context.Request.Path.StartsWithSegments("/api/team");
 
     if (!isFinancialRequest ||
         context.User.Identity?.IsAuthenticated != true)

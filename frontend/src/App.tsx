@@ -24,6 +24,14 @@ import {
   updateGoal,
   type BusinessGoal,
 } from './services/goals'
+import {
+  getTeamMembers,
+  inviteTeamMember,
+  removeTeamMember,
+  updateTeamMemberRole,
+  type TeamMember,
+  type TeamRole,
+} from './services/team'
 import './App.css'
 
 const navigation = [
@@ -167,6 +175,28 @@ const englishText: Record<string, string> = {
   'Marketing': 'Marketing',
   'Μισθοδοσία': 'Payroll',
   'Επέκταση επιχείρησης': 'Business expansion',
+  'ΟΜΑΔΑ': 'TEAM',
+  'Η ομάδα σου': 'Your team',
+  'Διαχειρίσου τους συνεργάτες και τους ρόλους του workspace.': 'Manage workspace collaborators and roles.',
+  '+ Πρόσκληση μέλους': '+ Invite member',
+  'Ενεργά μέλη': 'Active members',
+  'Εκκρεμείς προσκλήσεις': 'Pending invites',
+  'Διαχειριστές': 'Admins',
+  'Δεν υπάρχουν ακόμη μέλη.': 'No team members yet.',
+  'Πρόσθεσε τον πρώτο συνεργάτη στο workspace.': 'Add the first collaborator to your workspace.',
+  '+ Πρόσκληση συνεργάτη': '+ Invite collaborator',
+  Owner: 'Owner',
+  Admin: 'Admin',
+  Member: 'Member',
+  Active: 'Active',
+  Pending: 'Pending',
+  'Πρόσκληση μέλους': 'Invite team member',
+  'Email συνεργάτη': 'Collaborator email',
+  'Όνομα συνεργάτη': 'Collaborator name',
+  Ρόλος: 'Role',
+  'π.χ. maria@company.gr': 'e.g. maria@company.com',
+  'Η πρόσκληση θα εμφανιστεί ως εκκρεμής μέχρι να συνδεθεί ο συνεργάτης.': 'The invitation stays pending until the collaborator signs in.',
+  'Αφαίρεση μέλους': 'Remove member',
   'Αναζήτηση συναλλαγών': 'Search transactions',
   'Φίλτρο τύπου συναλλαγής': 'Filter transaction type',
   'Περιγραφή': 'Description',
@@ -301,6 +331,14 @@ function createEmptyGoal() {
   }
 }
 
+function createEmptyTeamMember() {
+  return {
+    email: '',
+    name: '',
+    role: 'Member' as TeamRole,
+  }
+}
+
 const goalTypeLabels: Record<string, { el: string; en: string }> = {
   Custom: { el: 'Custom', en: 'Custom' },
   'Tax / VAT': { el: 'Φορολογία / ΦΠΑ', en: 'Tax / VAT' },
@@ -358,6 +396,13 @@ function App() {
   const [contributionAmount, setContributionAmount] = useState('')
   const [isSavingGoal, setIsSavingGoal] = useState(false)
   const goalSaveInProgress = useRef(false)
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [isLoadingTeam, setIsLoadingTeam] = useState(false)
+  const [showTeamForm, setShowTeamForm] = useState(false)
+  const [teamError, setTeamError] = useState('')
+  const [newTeamMember, setNewTeamMember] = useState(createEmptyTeamMember())
+  const [isSavingTeam, setIsSavingTeam] = useState(false)
+  const teamSaveInProgress = useRef(false)
 
   useEffect(() => {
     getCurrentUser()
@@ -419,6 +464,20 @@ function App() {
       .then(setGoals)
       .catch(() => setGoals([]))
       .finally(() => setIsLoadingGoals(false))
+  }, [currentUser])
+
+  useEffect(() => {
+    if (!currentUser) {
+      setTeamMembers([])
+      return
+    }
+
+    setIsLoadingTeam(true)
+
+    getTeamMembers()
+      .then(setTeamMembers)
+      .catch(() => setTeamMembers([]))
+      .finally(() => setIsLoadingTeam(false))
   }, [currentUser])
 
   useEffect(() => {
@@ -879,6 +938,109 @@ function App() {
     } finally {
       goalSaveInProgress.current = false
       setIsSavingGoal(false)
+    }
+  }
+
+  function openTeamForm() {
+    if (teamSaveInProgress.current) return
+
+    setNewTeamMember(createEmptyTeamMember())
+    setTeamError('')
+    setShowTeamForm(true)
+  }
+
+  function closeTeamForm() {
+    if (teamSaveInProgress.current) return
+
+    setShowTeamForm(false)
+    setNewTeamMember(createEmptyTeamMember())
+    setTeamError('')
+  }
+
+  async function handleInviteTeamMember(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (teamSaveInProgress.current) return
+
+    setTeamError('')
+
+    if (!newTeamMember.email.trim()) {
+      setTeamError(language === 'en' ? 'Enter an email address.' : 'Γράψε ένα email.')
+      return
+    }
+
+    teamSaveInProgress.current = true
+    setIsSavingTeam(true)
+
+    try {
+      const member = await inviteTeamMember({
+        email: newTeamMember.email.trim(),
+        name: newTeamMember.name.trim() || undefined,
+        role: newTeamMember.role,
+      })
+
+      setTeamMembers((items) => [member, ...items])
+      teamSaveInProgress.current = false
+      closeTeamForm()
+    } catch (error) {
+      setTeamError(
+        error instanceof Error
+          ? error.message
+          : language === 'en'
+            ? 'The invitation could not be saved.'
+            : 'Δεν ήταν δυνατή η αποθήκευση της πρόσκλησης.',
+      )
+    } finally {
+      teamSaveInProgress.current = false
+      setIsSavingTeam(false)
+    }
+  }
+
+  async function handleTeamRoleChange(id: string, role: TeamRole) {
+    if (teamSaveInProgress.current) return
+
+    teamSaveInProgress.current = true
+    setIsSavingTeam(true)
+
+    try {
+      const member = await updateTeamMemberRole(id, role)
+      setTeamMembers((items) =>
+        items.map((item) => (item.id === member.id ? member : item)),
+      )
+    } catch (error) {
+      setTeamError(
+        error instanceof Error
+          ? error.message
+          : language === 'en'
+            ? 'The role could not be updated.'
+            : 'Δεν ήταν δυνατή η αλλαγή ρόλου.',
+      )
+    } finally {
+      teamSaveInProgress.current = false
+      setIsSavingTeam(false)
+    }
+  }
+
+  async function handleRemoveTeamMember(id: string) {
+    if (teamSaveInProgress.current) return
+
+    teamSaveInProgress.current = true
+    setIsSavingTeam(true)
+
+    try {
+      await removeTeamMember(id)
+      setTeamMembers((items) => items.filter((item) => item.id !== id))
+    } catch (error) {
+      setTeamError(
+        error instanceof Error
+          ? error.message
+          : language === 'en'
+            ? 'The member could not be removed.'
+            : 'Δεν ήταν δυνατή η αφαίρεση του μέλους.',
+      )
+    } finally {
+      teamSaveInProgress.current = false
+      setIsSavingTeam(false)
     }
   }
 
@@ -1482,6 +1644,138 @@ function App() {
     </>
   )
 
+  const activeTeamMembers = teamMembers.filter(
+    (member) => member.status === 'Active',
+  ).length
+  const pendingTeamMembers = teamMembers.filter(
+    (member) => member.status === 'Pending',
+  ).length
+  const adminTeamMembers = teamMembers.filter(
+    (member) => member.role === 'Admin',
+  ).length
+
+  const teamPage = (
+    <>
+      <section className="balance-section team-header">
+        <div>
+          <span className="section-label">{t('ΟΜΑΔΑ')}</span>
+          <h2>{t('Η ομάδα σου')}</h2>
+          <p>{t('Διαχειρίσου τους συνεργάτες και τους ρόλους του workspace.')}</p>
+        </div>
+
+        <button
+          className="primary-button"
+          onClick={openTeamForm}
+          disabled={isSavingTeam}
+        >
+          {t('+ Πρόσκληση μέλους')}
+        </button>
+      </section>
+
+      <section className="metrics">
+        <div className="metric">
+          <span>{t('Ενεργά μέλη')}</span>
+          <strong>{activeTeamMembers + 1}</strong>
+          <small>{t('Owner')}</small>
+        </div>
+        <div className="metric">
+          <span>{t('Εκκρεμείς προσκλήσεις')}</span>
+          <strong>{pendingTeamMembers}</strong>
+          <small>{t('Pending')}</small>
+        </div>
+        <div className="metric">
+          <span>{t('Διαχειριστές')}</span>
+          <strong>{adminTeamMembers}</strong>
+          <small>{t('Admin')}</small>
+        </div>
+      </section>
+
+      {teamError && (
+        <p className="auth-error team-page-error" role="alert">
+          {teamError}
+        </p>
+      )}
+
+      {isLoadingTeam && (
+        <p className="transactions-empty">
+          {language === 'en' ? 'Loading team...' : 'Φόρτωση ομάδας...'}
+        </p>
+      )}
+
+      {!isLoadingTeam && teamMembers.length === 0 && (
+        <div className="panel budget-empty">
+          <span>♙</span>
+          <h3>{t('Δεν υπάρχουν ακόμη μέλη.')}</h3>
+          <p>{t('Πρόσθεσε τον πρώτο συνεργάτη στο workspace.')}</p>
+          <button className="primary-button" onClick={openTeamForm}>
+            {t('+ Πρόσκληση συνεργάτη')}
+          </button>
+        </div>
+      )}
+
+      {!isLoadingTeam && teamMembers.length > 0 && (
+        <section className="panel team-panel">
+          <div className="panel-heading">
+            <div>
+              <span className="section-label">{t('ΟΜΑΔΑ')}</span>
+              <h3>{t('Η ομάδα σου')}</h3>
+            </div>
+          </div>
+
+          <div className="team-member-list">
+            <div className="team-member-row owner-row">
+              <div className="avatar team-avatar">KK</div>
+              <div className="team-member-identity">
+                <strong>{displayName}</strong>
+                <span>{currentUser.email}</span>
+              </div>
+              <span className="team-status active">{t('Owner')}</span>
+              <span className="team-role-label">{t('Owner')}</span>
+            </div>
+
+            {teamMembers.map((member) => (
+              <div className="team-member-row" key={member.id}>
+                <div className="avatar team-avatar">
+                  {(member.name || member.email).slice(0, 2).toUpperCase()}
+                </div>
+                <div className="team-member-identity">
+                  <strong>{member.name || member.email.split('@')[0]}</strong>
+                  <span>{member.email}</span>
+                </div>
+                <span className={`team-status ${member.status.toLowerCase()}`}>
+                  {t(member.status)}
+                </span>
+                <select
+                  className="team-role-select"
+                  value={member.role}
+                  onChange={(event) =>
+                    handleTeamRoleChange(
+                      member.id,
+                      event.target.value as TeamRole,
+                    )
+                  }
+                  disabled={isSavingTeam}
+                  aria-label={`${t('Ρόλος')}: ${member.email}`}
+                >
+                  <option value="Admin">{t('Admin')}</option>
+                  <option value="Member">{t('Member')}</option>
+                </select>
+                <button
+                  className="delete-transaction"
+                  onClick={() => handleRemoveTeamMember(member.id)}
+                  disabled={isSavingTeam}
+                  aria-label={`${t('Αφαίρεση μέλους')}: ${member.email}`}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </>
+  )
+
   const budgetsPage = (
     <>
       <section className="balance-section budgets-header">
@@ -1791,6 +2085,8 @@ function App() {
                 ? reportsPage
                 : activePage === 'Αποταμίευση'
                   ? goalsPage
+                  : activePage === 'Ομάδα'
+                    ? teamPage
             : activePage === 'Ρυθμίσεις'
               ? settingsPage
               : (
@@ -2134,6 +2430,113 @@ function App() {
                   disabled={isSavingGoal}
                 >
                   {isSavingGoal ? t('Αποθήκευση...') : t('Προσθήκη ποσού')}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+
+      {showTeamForm && (
+        <div className="modal-backdrop" onMouseDown={closeTeamForm}>
+          <section
+            className="transaction-modal team-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="team-form-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="panel-heading">
+              <div>
+                <span className="section-label">{t('ΟΜΑΔΑ')}</span>
+                <h3 id="team-form-title">{t('Πρόσκληση μέλους')}</h3>
+              </div>
+              <button
+                className="more-button"
+                type="button"
+                onClick={closeTeamForm}
+                disabled={isSavingTeam}
+                aria-label={t('Κλείσιμο φόρμας')}
+              >
+                ×
+              </button>
+            </div>
+
+            <form className="transaction-form" onSubmit={handleInviteTeamMember}>
+              <label htmlFor="team-email">{t('Email συνεργάτη')}</label>
+              <input
+                id="team-email"
+                type="email"
+                value={newTeamMember.email}
+                onChange={(event) =>
+                  setNewTeamMember((member) => ({
+                    ...member,
+                    email: event.target.value,
+                  }))
+                }
+                placeholder={t('π.χ. maria@company.gr')}
+                maxLength={256}
+                disabled={isSavingTeam}
+                autoFocus
+                required
+              />
+
+              <label htmlFor="team-name">{t('Όνομα συνεργάτη')}</label>
+              <input
+                id="team-name"
+                value={newTeamMember.name}
+                onChange={(event) =>
+                  setNewTeamMember((member) => ({
+                    ...member,
+                    name: event.target.value,
+                  }))
+                }
+                placeholder={language === 'en' ? 'e.g. Maria Papadopoulou' : 'π.χ. Μαρία Παπαδοπούλου'}
+                maxLength={120}
+                disabled={isSavingTeam}
+              />
+
+              <label htmlFor="team-role">{t('Ρόλος')}</label>
+              <select
+                id="team-role"
+                value={newTeamMember.role}
+                onChange={(event) =>
+                  setNewTeamMember((member) => ({
+                    ...member,
+                    role: event.target.value as TeamRole,
+                  }))
+                }
+                disabled={isSavingTeam}
+              >
+                <option value="Admin">{t('Admin')}</option>
+                <option value="Member">{t('Member')}</option>
+              </select>
+
+              <p className="form-hint">
+                {t('Η πρόσκληση θα εμφανιστεί ως εκκρεμής μέχρι να συνδεθεί ο συνεργάτης.')}
+              </p>
+
+              {teamError && (
+                <p className="auth-error" role="alert">
+                  {teamError}
+                </p>
+              )}
+
+              <div className="modal-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={closeTeamForm}
+                  disabled={isSavingTeam}
+                >
+                  {t('Ακύρωση')}
+                </button>
+                <button
+                  className="primary-button"
+                  type="submit"
+                  disabled={isSavingTeam}
+                >
+                  {isSavingTeam ? t('Αποθήκευση...') : t('Πρόσκληση μέλους')}
                 </button>
               </div>
             </form>
