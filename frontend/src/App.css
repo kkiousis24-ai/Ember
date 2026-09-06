@@ -905,3 +905,56 @@ main > * {
   background: #0b0c0e;
   font-size: 13px;
 }
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(3, 7, 18, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.transaction-modal {
+  width: min(100%, 520px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 24px;
+  border: 1px solid var(--border, #2d3545);
+  border-radius: 22px;
+  background: var(--surface, #151a24);
+  color: var(--text, #f7f8fb);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.transaction-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.transaction-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted, #9ba5b5);
+}
+
+.transaction-form input,
+.transaction-form select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  border: 1px solid var(--border, #2d3545);
+  border-radius: 12px;
+  background: var(--background, #0f131b);
+  color: var(--text, #f7f8fb);
+  font: inherit;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
