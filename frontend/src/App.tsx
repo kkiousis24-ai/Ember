@@ -44,6 +44,51 @@ function formatDate(value: string) {
   }).format(new Date(value))
 }
 
+function escapeCsvValue(value: string | number | boolean) {
+  return `"${String(value).replace(/"/g, '""')}"`
+}
+
+function exportTransactions(transactions: Transaction[]) {
+  const headers = [
+    'Περιγραφή',
+    'Ποσό',
+    'Τύπος',
+    'Κατηγορία',
+    'Ημερομηνία',
+    'Νόμισμα',
+    'Επαναλαμβανόμενη',
+  ]
+
+  const rows = transactions.map((transaction) => [
+    transaction.description,
+    transaction.amount.toFixed(2),
+    transaction.type === 1 ? 'Έσοδο' : 'Έξοδο',
+    transaction.category,
+    new Date(transaction.occurredAtUtc).toLocaleDateString('el-GR'),
+    transaction.currency,
+    transaction.isRecurring ? 'Ναι' : 'Όχι',
+  ])
+
+  const csv = [headers, ...rows]
+    .map((row) => row.map(escapeCsvValue).join(';'))
+    .join('\r\n')
+
+  const blob = new Blob([`\uFEFF${csv}`], {
+    type: 'text/csv;charset=utf-8;',
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+
+  link.href = url
+  link.download = `ember-transactions-${new Date()
+    .toISOString()
+    .slice(0, 10)}.csv`
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
 function getLastSixMonths(transactions: Transaction[]) {
   const now = new Date()
 
@@ -613,7 +658,13 @@ function App() {
         </div>
 
         <div className="balance-actions">
-          <button className="secondary-button">Εξαγωγή</button>
+          <button
+            className="secondary-button"
+            onClick={() => exportTransactions(transactions)}
+            disabled={transactions.length === 0}
+          >
+            Εξαγωγή
+          </button>
           <button
             className="primary-button"
             onClick={openCreateTransactionForm}
