@@ -55,6 +55,10 @@ function createEmptyTransaction() {
   }
 }
 
+type AccessUser = AuthUser & {
+  hasActiveAccess?: boolean
+}
+
 function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
   const [checkingSession, setCheckingSession] = useState(true)
@@ -294,6 +298,28 @@ function App() {
 
   if (!currentUser) {
     return <AuthScreen onAuthenticated={setCurrentUser} />
+  }
+
+  const hasActiveAccess =
+    (currentUser as AccessUser).hasActiveAccess ?? true
+
+  if (!hasActiveAccess) {
+    return (
+      <div className="subscription-lock">
+        <section className="subscription-lock-card">
+          <div className="lock-mark">⌛</div>
+          <span className="section-label">EMBER TRIAL</span>
+          <h1>Η δωρεάν δοκιμή ολοκληρώθηκε</h1>
+          <p>
+            Οι 14 ημέρες δοκιμής σου τελείωσαν. Επίλεξε ένα πακέτο για να
+            συνεχίσεις να χρησιμοποιείς τις συναλλαγές και το dashboard.
+          </p>
+          <button className="secondary-button" onClick={handleLogout}>
+            Αποσύνδεση
+          </button>
+        </section>
+      </div>
+    )
   }
 
   const totalIncome = transactions

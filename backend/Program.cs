@@ -57,12 +57,65 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("EmberFrontend");
 app.UseAuthentication();
+
+/*
+ * The /api/auth/me endpoint remains available after the trial expires,
+ * so the frontend can show the correct subscription message.
+ * Financial data endpoints are blocked until the user has active access.
+ */
+app.Use(async (context, next) =>
+{
+    var isTransactionsRequest =
+        context.Request.Path.StartsWithSegments("/api/transactions");
+
+    if (!isTransactionsRequest ||
+        context.User.Identity?.IsAuthenticated != true)
+    {
+        await next();
+        return;
+    }
+
+    var userManager =
+        context.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+
+    var user = await userManager.GetUserAsync(context.User);
+
+    if (user is null)
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return;
+    }
+
+    var now = DateTime.UtcNow;
+    var hasActiveAccess = user.Plan == SubscriptionPlan.Trial
+        ? user.TrialEndsAtUtc > now
+        : user.SubscriptionEndsAtUtc is null ||
+          user.SubscriptionEndsAtUtc > now;
+
+    if (!hasActiveAccess)
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            title = "Η δωρεάν δοκιμή ολοκληρώθηκε.",
+            detail = "Επίλεξε ένα πακέτο για να συνεχίσεις να χρησιμοποιείς τις συναλλαγές.",
+            code = "TRIAL_EXPIRED"
+        });
+
+        return;
+    }
+
+    await next();
+});
+
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.MapGroup("/api/auth")
     .MapIdentityApi<ApplicationUser>();
+
 app.MapGet("/api/auth/me", async (
     HttpContext httpContext,
     UserManager<ApplicationUser> userManager) =>
@@ -108,6 +161,7 @@ app.MapPost("/api/auth/logout", async (
     return Results.NoContent();
 })
 .RequireAuthorization();
+
 app.MapGet("/api/health", () =>
     Results.Ok(new
     {
@@ -116,3 +170,4 @@ app.MapGet("/api/health", () =>
     }));
 
 app.Run();
+

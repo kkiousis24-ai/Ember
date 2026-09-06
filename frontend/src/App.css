@@ -1294,3 +1294,55 @@ main > * {
     grid-template-columns: 1fr;
   }
 }
+
+/* Trial access screen */
+.subscription-lock {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--text);
+  background: var(--background);
+}
+
+.subscription-lock-card {
+  width: min(100%, 520px);
+  padding: 38px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.12);
+  text-align: center;
+}
+
+.lock-mark {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 20px;
+  border-radius: 16px;
+  color: var(--accent-text, var(--accent-bright));
+  background: var(--accent-soft);
+  font-size: 25px;
+}
+
+.subscription-lock-card h1 {
+  margin: 10px 0 10px;
+  color: var(--text);
+  font-size: clamp(24px, 4vw, 32px);
+  letter-spacing: -0.8px;
+}
+
+.subscription-lock-card p {
+  margin: 0 auto 24px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+@media (max-width: 700px) {
+  .subscription-lock-card {
+    padding: 28px 22px;
+  }
+}
