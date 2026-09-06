@@ -28,6 +28,107 @@ const navigation = [
   { icon: '≡', label: 'Αναφορές' },
 ]
 
+type Language = 'el' | 'en'
+
+const englishText: Record<string, string> = {
+  Επισκόπηση: 'Overview',
+  Συναλλαγές: 'Transactions',
+  Προϋπολογισμοί: 'Budgets',
+  Αποταμίευση: 'Savings',
+  Ομάδα: 'Team',
+  Συναντήσεις: 'Meetings',
+  Αναφορές: 'Reports',
+  Ρυθμίσεις: 'Settings',
+  Αποσύνδεση: 'Log out',
+  'Χώρος εργασίας': 'Workspace',
+  'ΣΥΝΟΛΙΚΗ ΚΑΘΑΡΗ ΡΟΗ': 'TOTAL NET FLOW',
+  'καθαρή ροή τον τρέχοντα μήνα': 'net flow this month',
+  Εξαγωγή: 'Export',
+  '+ Νέα συναλλαγή': '+ New transaction',
+  Έσοδα: 'Income',
+  Έξοδα: 'Expenses',
+  'Αυτόν τον μήνα': 'This month',
+  'Καθαρή ροή': 'Net flow',
+  Θετική: 'Positive',
+  Αρνητική: 'Negative',
+  'ΤΕΛΕΥΤΑΙΟΙ 6 ΜΗΝΕΣ': 'LAST 6 MONTHS',
+  'Ταμειακή ροή': 'Cash flow',
+  Προϋπολογισμός: 'Budget',
+  'Δωρεάν δοκιμή': 'Free trial',
+  ημέρες: 'days',
+  ΔΡΑΣΤΗΡΙΟΤΗΤΑ: 'ACTIVITY',
+  'Πρόσφατες συναλλαγές': 'Recent transactions',
+  'Προβολή όλων →': 'View all →',
+  'Φόρτωση συναλλαγών...': 'Loading transactions...',
+  'Δεν υπάρχουν ακόμη συναλλαγές.': 'No transactions yet.',
+  'ΟΛΕΣ ΟΙ ΚΑΤΑΧΩΡΗΣΕΙΣ': 'ALL ENTRIES',
+  'Αναζήτηση περιγραφής ή κατηγορίας...': 'Search description or category...',
+  'Όλες': 'All',
+  'Εμφανίζονται': 'Showing',
+  'Σύνολο εσόδων': 'Total income',
+  'Σύνολο εξόδων': 'Total expenses',
+  'Δεν βρέθηκαν συναλλαγές με αυτά τα φίλτρα.': 'No transactions match these filters.',
+  'ΠΡΟΫΠΟΛΟΓΙΣΜΟΙ': 'BUDGETS',
+  'Υπόλοιπο από όριο ': 'Remaining from a limit of ',
+  ' και έξοδα ': ' and expenses ',
+  '+ Νέος προϋπολογισμός': '+ New budget',
+  'Συνολικό όριο': 'Total limit',
+  κατηγορίες: 'categories',
+  'Έχουν δαπανηθεί': 'Spent',
+  χρήση: 'used',
+  Υπόλοιπο: 'Remaining',
+  'Εντός ορίου': 'Within limit',
+  'Πάνω από το όριο': 'Over limit',
+  'Φόρτωση προϋπολογισμών...': 'Loading budgets...',
+  'Δεν υπάρχουν προϋπολογισμοί': 'No budgets yet',
+  'Δημιούργησε το πρώτο όριο για μια κατηγορία εξόδων.': 'Create your first limit for an expense category.',
+  '+ Δημιουργία προϋπολογισμού': '+ Create budget',
+  ΚΑΤΗΓΟΡΙΑ: 'CATEGORY',
+  Δαπάνες: 'Spent',
+  Όριο: 'Limit',
+  'ΠΡΟΤΙΜΗΣΕΙΣ': 'PREFERENCES',
+  'Ρυθμίσεις εμφάνισης': 'Appearance settings',
+  'Θέμα εφαρμογής': 'App theme',
+  'Η επιλογή αποθηκεύεται σε αυτή τη συσκευή.': 'This choice is saved on this device.',
+  Σκούρο: 'Dark',
+  Λευκό: 'Light',
+  Γλώσσα: 'Language',
+  'Η Ember είναι προσωρινά ρυθμισμένη στα Ελληνικά.': 'Choose the language for the Ember interface.',
+  ΛΟΓΑΡΙΑΣΜΟΣ: 'ACCOUNT',
+  'Το προφίλ σου': 'Your profile',
+  Πλάνο: 'Plan',
+  'Υπόλοιπο δοκιμής': 'Trial remaining',
+  'Η δωρεάν δοκιμή ολοκληρώθηκε': 'Your free trial has ended',
+  'Επιστροφή στην επισκόπηση': 'Back to overview',
+  'Η ενότητα θα συνδεθεί με τα πραγματικά δεδομένα της Ember.': 'This section will be connected to Ember data.',
+  'ΕΠΕΞΕΡΓΑΣΙΑ': 'EDIT',
+  'ΝΕΑ ΚΑΤΑΧΩΡΗΣΗ': 'NEW ENTRY',
+  'Επεξεργασία προϋπολογισμού': 'Edit budget',
+  'Νέος προϋπολογισμός': 'New budget',
+  Κατηγορία: 'Category',
+  'Μηνιαίο όριο': 'Monthly limit',
+  Περίοδος: 'Period',
+  Ακύρωση: 'Cancel',
+  'Αποθήκευση...': 'Saving...',
+  'Αποθήκευση αλλαγών': 'Save changes',
+  Αποθήκευση: 'Save',
+  'Επεξεργασία συναλλαγής': 'Edit transaction',
+  'Νέα συναλλαγή': 'New transaction',
+  Επεξεργασία: 'Edit',
+  'Διαγραφή συναλλαγής': 'Delete transaction',
+  υπόλοιπο: 'remaining',
+  'Πρόοδος προϋπολογισμού': 'Budget progress',
+  'Αναζήτηση συναλλαγών': 'Search transactions',
+  'Φίλτρο τύπου συναλλαγής': 'Filter transaction type',
+  'Περιγραφή': 'Description',
+  Ποσό: 'Amount',
+  Τύπος: 'Type',
+  'Κλείσιμο φόρμας': 'Close form',
+  'Έσοδο': 'Income',
+  'Έξοδο': 'Expense',
+  'Φόρτωση Ember...': 'Loading Ember...',
+}
+
 type TransactionFilter = 'all' | 'income' | 'expense'
 
 function formatCurrency(amount: number) {
@@ -148,6 +249,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
   const [checkingSession, setCheckingSession] = useState(true)
   const [darkMode, setDarkMode] = useState(true)
+  const [language, setLanguage] = useState<Language>('el')
   const [activePage, setActivePage] = useState('Επισκόπηση')
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false)
@@ -182,9 +284,14 @@ function App() {
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem('ember-theme')
+    const savedLanguage = window.localStorage.getItem('ember-language')
 
     if (savedTheme === 'light') {
       setDarkMode(false)
+    }
+
+    if (savedLanguage === 'en') {
+      setLanguage('en')
     }
   }, [])
 
@@ -292,6 +399,18 @@ function App() {
       window.localStorage.setItem('ember-theme', next ? 'dark' : 'light')
       return next
     })
+  }
+
+  function toggleLanguage() {
+    setLanguage((current) => {
+      const next = current === 'el' ? 'en' : 'el'
+      window.localStorage.setItem('ember-language', next)
+      return next
+    })
+  }
+
+  function t(value: string) {
+    return language === 'en' ? englishText[value] ?? value : value
   }
 
   function openCreateTransactionForm() {
@@ -495,7 +614,7 @@ function App() {
   }
 
   if (checkingSession) {
-    return <div className="session-loading">Φόρτωση Ember...</div>
+    return <div className="session-loading">{t('Φόρτωση Ember...')}</div>
   }
 
   if (!currentUser) {
@@ -511,13 +630,14 @@ function App() {
         <section className="subscription-lock-card">
           <div className="lock-mark">⌛</div>
           <span className="section-label">EMBER TRIAL</span>
-          <h1>Η δωρεάν δοκιμή ολοκληρώθηκε</h1>
+          <h1>{t('Η δωρεάν δοκιμή ολοκληρώθηκε')}</h1>
           <p>
-            Οι 14 ημέρες δοκιμής σου τελείωσαν. Επίλεξε ένα πακέτο για να
-            συνεχίσεις να χρησιμοποιείς τις συναλλαγές και το dashboard.
+            {language === 'en'
+              ? 'Your 14-day trial has ended. Choose a plan to continue using transactions and the dashboard.'
+              : 'Οι 14 ημέρες δοκιμής σου τελείωσαν. Επίλεξε ένα πακέτο για να συνεχίσεις να χρησιμοποιείς τις συναλλαγές και το dashboard.'}
           </p>
           <button className="secondary-button" onClick={handleLogout}>
-            Αποσύνδεση
+            {t('Αποσύνδεση')}
           </button>
         </section>
       </div>
@@ -569,10 +689,13 @@ function App() {
   const budgetUsagePercentage = totalBudgetLimit
     ? Math.round((totalBudgetSpent / totalBudgetLimit) * 100)
     : 0
-  const currentMonthLabel = new Intl.DateTimeFormat('el-GR', {
+  const currentMonthLabel = new Intl.DateTimeFormat(
+    language === 'en' ? 'en-US' : 'el-GR',
+    {
     month: 'long',
     year: 'numeric',
-  }).format(new Date())
+    },
+  ).format(new Date())
 
   const normalizedSearch = transactionSearch.trim().toLocaleLowerCase('el-GR')
   const filteredTransactions = transactions.filter((transaction) => {
@@ -612,9 +735,9 @@ function App() {
               style={{ padding: 0, fontSize: 'inherit' }}
               onClick={() => openEditTransactionForm(transaction)}
               disabled={isSavingTransaction}
-              aria-label={`Επεξεργασία συναλλαγής: ${transaction.description}`}
+              aria-label={`${t('Επεξεργασία συναλλαγής')}: ${transaction.description}`}
             >
-              Επεξεργασία
+              {t('Επεξεργασία')}
             </button>
           </span>
         </div>
@@ -634,7 +757,7 @@ function App() {
           className="delete-transaction"
           onClick={() => handleDeleteTransaction(transaction.id)}
           disabled={isSavingTransaction}
-          aria-label={`Διαγραφή συναλλαγής: ${transaction.description}`}
+          aria-label={`${t('Διαγραφή συναλλαγής')}: ${transaction.description}`}
         >
           ×
         </button>
@@ -646,14 +769,14 @@ function App() {
     <>
       <section className="balance-section">
         <div>
-          <span className="section-label">ΣΥΝΟΛΙΚΗ ΚΑΘΑΡΗ ΡΟΗ</span>
+          <span className="section-label">{t('ΣΥΝΟΛΙΚΗ ΚΑΘΑΡΗ ΡΟΗ')}</span>
           <h2>{formatCurrency(netCashFlow)}</h2>
           <p>
             <strong>
               {currentMonthNet >= 0 ? '+' : ''}
               {formatCurrency(currentMonthNet)}
             </strong>{' '}
-            καθαρή ροή τον τρέχοντα μήνα
+            {t('καθαρή ροή τον τρέχοντα μήνα')}
           </p>
         </div>
 
@@ -663,36 +786,36 @@ function App() {
             onClick={() => exportTransactions(transactions)}
             disabled={transactions.length === 0}
           >
-            Εξαγωγή
+            {t('Εξαγωγή')}
           </button>
           <button
             className="primary-button"
             onClick={openCreateTransactionForm}
             disabled={isSavingTransaction}
           >
-            + Νέα συναλλαγή
+            {t('+ Νέα συναλλαγή')}
           </button>
         </div>
       </section>
 
       <section className="metrics">
         <div className="metric">
-          <span>Έσοδα</span>
+          <span>{t('Έσοδα')}</span>
           <strong>{formatCurrency(currentMonthIncome)}</strong>
-          <small className="up">Αυτόν τον μήνα</small>
+          <small className="up">{t('Αυτόν τον μήνα')}</small>
         </div>
 
         <div className="metric">
-          <span>Έξοδα</span>
+          <span>{t('Έξοδα')}</span>
           <strong>{formatCurrency(currentMonthExpense)}</strong>
-          <small>Αυτόν τον μήνα</small>
+          <small>{t('Αυτόν τον μήνα')}</small>
         </div>
 
         <div className="metric">
-          <span>Καθαρή ροή</span>
+          <span>{t('Καθαρή ροή')}</span>
           <strong>{formatCurrency(currentMonthNet)}</strong>
           <small className={currentMonthNet >= 0 ? 'up' : 'negative'}>
-            {currentMonthNet >= 0 ? 'Θετική' : 'Αρνητική'}
+            {t(currentMonthNet >= 0 ? 'Θετική' : 'Αρνητική')}
           </small>
         </div>
       </section>
@@ -701,18 +824,18 @@ function App() {
         <article className="panel chart-panel">
           <div className="panel-heading">
             <div>
-              <span className="section-label">ΤΕΛΕΥΤΑΙΟΙ 6 ΜΗΝΕΣ</span>
-              <h3>Ταμειακή ροή</h3>
+              <span className="section-label">{t('ΤΕΛΕΥΤΑΙΟΙ 6 ΜΗΝΕΣ')}</span>
+              <h3>{t('Ταμειακή ροή')}</h3>
             </div>
 
             <div className="legend">
               <span>
                 <i className="income-dot" />
-                Έσοδα
+                {t('Έσοδα')}
               </span>
               <span>
                 <i className="expense-dot" />
-                Έξοδα
+                {t('Έξοδα')}
               </span>
             </div>
           </div>
@@ -742,14 +865,14 @@ function App() {
               <span className="section-label">
                 {currentMonthLabel.toUpperCase()}
               </span>
-              <h3>Αυτόν τον μήνα</h3>
+              <h3>{t('Αυτόν τον μήνα')}</h3>
             </div>
             <button className="more-button">•••</button>
           </div>
 
           <div className="month-list">
             <div>
-              <span>Προϋπολογισμός</span>
+              <span>{t('Προϋπολογισμός')}</span>
               <strong>{budgetUsagePercentage}%</strong>
             </div>
 
@@ -762,18 +885,18 @@ function App() {
             </div>
 
             <div className="month-row">
-              <span>Έσοδα</span>
+              <span>{t('Έσοδα')}</span>
               <strong>{formatCurrency(currentMonthIncome)}</strong>
             </div>
 
             <div className="month-row">
-              <span>Έξοδα</span>
+              <span>{t('Έξοδα')}</span>
               <strong>{formatCurrency(currentMonthExpense)}</strong>
             </div>
 
             <div className="month-row">
-              <span>Δωρεάν δοκιμή</span>
-              <strong>{currentUser.trialDaysRemaining} ημέρες</strong>
+              <span>{t('Δωρεάν δοκιμή')}</span>
+              <strong>{currentUser.trialDaysRemaining} {t('ημέρες')}</strong>
             </div>
           </div>
         </article>
@@ -782,26 +905,26 @@ function App() {
       <section className="panel transactions-panel">
         <div className="panel-heading">
           <div>
-            <span className="section-label">ΔΡΑΣΤΗΡΙΟΤΗΤΑ</span>
-            <h3>Πρόσφατες συναλλαγές</h3>
+            <span className="section-label">{t('ΔΡΑΣΤΗΡΙΟΤΗΤΑ')}</span>
+            <h3>{t('Πρόσφατες συναλλαγές')}</h3>
           </div>
 
           <button
             className="text-button"
             onClick={() => setActivePage('Συναλλαγές')}
           >
-            Προβολή όλων →
+            {t('Προβολή όλων →')}
           </button>
         </div>
 
         <div className="transaction-list">
           {isLoadingTransactions && (
-            <p className="transactions-empty">Φόρτωση συναλλαγών...</p>
+            <p className="transactions-empty">{t('Φόρτωση συναλλαγών...')}</p>
           )}
 
           {!isLoadingTransactions && transactions.length === 0 && (
             <p className="transactions-empty">
-              Δεν υπάρχουν ακόμη συναλλαγές.
+              {t('Δεν υπάρχουν ακόμη συναλλαγές.')}
             </p>
           )}
 
@@ -815,8 +938,8 @@ function App() {
     <section className="panel transactions-page-panel">
       <div className="panel-heading">
         <div>
-          <span className="section-label">ΟΛΕΣ ΟΙ ΚΑΤΑΧΩΡΗΣΕΙΣ</span>
-          <h3>Συναλλαγές</h3>
+          <span className="section-label">{t('ΟΛΕΣ ΟΙ ΚΑΤΑΧΩΡΗΣΕΙΣ')}</span>
+          <h3>{t('Συναλλαγές')}</h3>
         </div>
 
         <button
@@ -824,7 +947,7 @@ function App() {
           onClick={openCreateTransactionForm}
           disabled={isSavingTransaction}
         >
-          + Νέα συναλλαγή
+          {t('+ Νέα συναλλαγή')}
         </button>
       </div>
 
@@ -833,8 +956,8 @@ function App() {
           className="transaction-search"
           value={transactionSearch}
           onChange={(event) => setTransactionSearch(event.target.value)}
-          placeholder="Αναζήτηση περιγραφής ή κατηγορίας..."
-          aria-label="Αναζήτηση συναλλαγών"
+          placeholder={t('Αναζήτηση περιγραφής ή κατηγορίας...')}
+          aria-label={t('Αναζήτηση συναλλαγών')}
         />
 
         <select
@@ -843,39 +966,39 @@ function App() {
           onChange={(event) =>
             setTransactionFilter(event.target.value as TransactionFilter)
           }
-          aria-label="Φίλτρο τύπου συναλλαγής"
+          aria-label={t('Φίλτρο τύπου συναλλαγής')}
         >
-          <option value="all">Όλες</option>
-          <option value="income">Έσοδα</option>
-          <option value="expense">Έξοδα</option>
+          <option value="all">{t('Όλες')}</option>
+          <option value="income">{t('Έσοδα')}</option>
+          <option value="expense">{t('Έξοδα')}</option>
         </select>
       </div>
 
       <div className="transaction-summary">
         <div className="transaction-summary-card">
-          <span>Εμφανίζονται</span>
+          <span>{t('Εμφανίζονται')}</span>
           <strong>{filteredTransactions.length}</strong>
         </div>
         <div className="transaction-summary-card">
-          <span>Σύνολο εσόδων</span>
+          <span>{t('Σύνολο εσόδων')}</span>
           <strong className="income-text">{formatCurrency(totalIncome)}</strong>
         </div>
         <div className="transaction-summary-card">
-          <span>Σύνολο εξόδων</span>
+          <span>{t('Σύνολο εξόδων')}</span>
           <strong>{formatCurrency(totalExpense)}</strong>
         </div>
       </div>
 
       <div className="transaction-list full-transaction-list">
         {isLoadingTransactions && (
-          <p className="transactions-empty">Φόρτωση συναλλαγών...</p>
+          <p className="transactions-empty">{t('Φόρτωση συναλλαγών...')}</p>
         )}
 
         {!isLoadingTransactions && filteredTransactions.length === 0 && (
           <p className="transactions-empty">
             {transactions.length === 0
-              ? 'Δεν υπάρχουν ακόμη συναλλαγές.'
-              : 'Δεν βρέθηκαν συναλλαγές με αυτά τα φίλτρα.'}
+              ? t('Δεν υπάρχουν ακόμη συναλλαγές.')
+              : t('Δεν βρέθηκαν συναλλαγές με αυτά τα φίλτρα.')}
           </p>
         )}
 
@@ -889,10 +1012,10 @@ function App() {
     <>
       <section className="balance-section budgets-header">
         <div>
-          <span className="section-label">ΠΡΟΫΠΟΛΟΓΙΣΜΟΙ · {currentMonthLabel}</span>
+          <span className="section-label">{t('ΠΡΟΫΠΟΛΟΓΙΣΜΟΙ')} · {currentMonthLabel}</span>
           <h2>{formatCurrency(totalBudgetRemaining)}</h2>
           <p>
-            Υπόλοιπο από όριο {formatCurrency(totalBudgetLimit)} και έξοδα{' '}
+            {t('Υπόλοιπο από όριο ')}{formatCurrency(totalBudgetLimit)}{t(' και έξοδα ')}
             {formatCurrency(totalBudgetSpent)}
           </p>
         </div>
@@ -902,44 +1025,44 @@ function App() {
           onClick={openCreateBudgetForm}
           disabled={isSavingBudget}
         >
-          + Νέος προϋπολογισμός
+          {t('+ Νέος προϋπολογισμός')}
         </button>
       </section>
 
       <section className="metrics">
         <div className="metric">
-          <span>Συνολικό όριο</span>
+          <span>{t('Συνολικό όριο')}</span>
           <strong>{formatCurrency(totalBudgetLimit)}</strong>
-          <small>{budgets.length} κατηγορίες</small>
+          <small>{budgets.length} {t('κατηγορίες')}</small>
         </div>
 
         <div className="metric">
-          <span>Έχουν δαπανηθεί</span>
+          <span>{t('Έχουν δαπανηθεί')}</span>
           <strong>{formatCurrency(totalBudgetSpent)}</strong>
-          <small>{budgetUsagePercentage}% χρήση</small>
+          <small>{budgetUsagePercentage}% {t('χρήση')}</small>
         </div>
 
         <div className="metric">
-          <span>Υπόλοιπο</span>
+          <span>{t('Υπόλοιπο')}</span>
           <strong>{formatCurrency(totalBudgetRemaining)}</strong>
           <small className={totalBudgetRemaining >= 0 ? 'up' : 'negative'}>
-            {totalBudgetRemaining >= 0 ? 'Εντός ορίου' : 'Πάνω από το όριο'}
+            {t(totalBudgetRemaining >= 0 ? 'Εντός ορίου' : 'Πάνω από το όριο')}
           </small>
         </div>
       </section>
 
       <section className="budget-grid">
         {isLoadingBudgets && (
-          <p className="transactions-empty">Φόρτωση προϋπολογισμών...</p>
+          <p className="transactions-empty">{t('Φόρτωση προϋπολογισμών...')}</p>
         )}
 
         {!isLoadingBudgets && budgets.length === 0 && (
           <div className="panel budget-empty">
             <span>◫</span>
-            <h3>Δεν υπάρχουν προϋπολογισμοί</h3>
-            <p>Δημιούργησε το πρώτο όριο για μια κατηγορία εξόδων.</p>
+            <h3>{t('Δεν υπάρχουν προϋπολογισμοί')}</h3>
+            <p>{t('Δημιούργησε το πρώτο όριο για μια κατηγορία εξόδων.')}</p>
             <button className="primary-button" onClick={openCreateBudgetForm}>
-              + Δημιουργία προϋπολογισμού
+              {t('+ Δημιουργία προϋπολογισμού')}
             </button>
           </div>
         )}
@@ -949,7 +1072,7 @@ function App() {
             <article className="panel budget-card" key={budget.id}>
               <div className="budget-card-heading">
                 <div>
-                  <span className="section-label">ΚΑΤΗΓΟΡΙΑ</span>
+                  <span className="section-label">{t('ΚΑΤΗΓΟΡΙΑ')}</span>
                   <h3>{budget.category}</h3>
                 </div>
 
@@ -975,16 +1098,16 @@ function App() {
 
               <div className="budget-amounts">
                 <div>
-                  <span>Δαπάνες</span>
+                  <span>{t('Δαπάνες')}</span>
                   <strong>{formatCurrency(budget.spentAmount)}</strong>
                 </div>
                 <div>
-                  <span>Όριο</span>
+                  <span>{t('Όριο')}</span>
                   <strong>{formatCurrency(budget.limitAmount)}</strong>
                 </div>
               </div>
 
-              <div className="budget-progress" aria-label="Πρόοδος προϋπολογισμού">
+              <div className="budget-progress" aria-label={t('Πρόοδος προϋπολογισμού')}>
                 <span
                   className={
                     budget.progressPercentage > 100 ? 'over-budget' : undefined
@@ -999,13 +1122,13 @@ function App() {
               </div>
 
               <div className="budget-card-footer">
-                <span>{Math.round(budget.progressPercentage)}% χρήση</span>
+                <span>{Math.round(budget.progressPercentage)}% {t('χρήση')}</span>
                 <strong
                   className={
                     budget.remainingAmount >= 0 ? 'income-text' : 'negative'
                   }
                 >
-                  {formatCurrency(budget.remainingAmount)} υπόλοιπο
+                  {formatCurrency(budget.remainingAmount)} {t('υπόλοιπο')}
                 </strong>
               </div>
             </article>
@@ -1019,30 +1142,32 @@ function App() {
       <article className="panel settings-panel">
         <div className="panel-heading">
           <div>
-            <span className="section-label">ΠΡΟΤΙΜΗΣΕΙΣ</span>
-            <h3>Ρυθμίσεις εμφάνισης</h3>
+            <span className="section-label">{t('ΠΡΟΤΙΜΗΣΕΙΣ')}</span>
+            <h3>{t('Ρυθμίσεις εμφάνισης')}</h3>
           </div>
         </div>
 
         <div className="settings-list">
           <div className="settings-row">
             <div>
-              <strong>Θέμα εφαρμογής</strong>
+              <strong>{t('Θέμα εφαρμογής')}</strong>
               <span>
-                Η επιλογή αποθηκεύεται σε αυτή τη συσκευή.
+                {t('Η επιλογή αποθηκεύεται σε αυτή τη συσκευή.')}
               </span>
             </div>
             <button className="secondary-button" onClick={toggleTheme}>
-              {darkMode ? 'Σκούρο' : 'Λευκό'}
+              {t(darkMode ? 'Σκούρο' : 'Λευκό')}
             </button>
           </div>
 
           <div className="settings-row">
             <div>
-              <strong>Γλώσσα</strong>
-              <span>Η Ember είναι προσωρινά ρυθμισμένη στα Ελληνικά.</span>
+              <strong>{t('Γλώσσα')}</strong>
+              <span>{t('Η Ember είναι προσωρινά ρυθμισμένη στα Ελληνικά.')}</span>
             </div>
-            <span className="settings-value">EL</span>
+            <button className="secondary-button" onClick={toggleLanguage}>
+              {language === 'el' ? 'Ελληνικά' : 'English'}
+            </button>
           </div>
         </div>
       </article>
@@ -1050,8 +1175,8 @@ function App() {
       <article className="panel settings-panel">
         <div className="panel-heading">
           <div>
-            <span className="section-label">ΛΟΓΑΡΙΑΣΜΟΣ</span>
-            <h3>Το προφίλ σου</h3>
+            <span className="section-label">{t('ΛΟΓΑΡΙΑΣΜΟΣ')}</span>
+            <h3>{t('Το προφίλ σου')}</h3>
           </div>
         </div>
 
@@ -1062,13 +1187,13 @@ function App() {
           </div>
 
           <div className="settings-row stacked">
-            <span>Πλάνο</span>
+            <span>{t('Πλάνο')}</span>
             <strong>{accountPlan}</strong>
           </div>
 
           <div className="settings-row stacked">
-            <span>Υπόλοιπο δοκιμής</span>
-            <strong>{currentUser.trialDaysRemaining} ημέρες</strong>
+            <span>{t('Υπόλοιπο δοκιμής')}</span>
+            <strong>{currentUser.trialDaysRemaining} {t('ημέρες')}</strong>
           </div>
         </div>
       </article>
@@ -1102,7 +1227,7 @@ function App() {
 
         <div className="workspace">
           <div>
-            <span>Χώρος εργασίας</span>
+            <span>{t('Χώρος εργασίας')}</span>
             <strong>Kostas Business</strong>
           </div>
           <span className="trial-badge">
@@ -1120,7 +1245,7 @@ function App() {
               onClick={() => setActivePage(item.label)}
             >
               <span>{item.icon}</span>
-              {item.label}
+              {t(item.label)}
             </button>
           ))}
         </nav>
@@ -1133,7 +1258,7 @@ function App() {
             onClick={() => setActivePage('Ρυθμίσεις')}
           >
             <span>⚙</span>
-            Ρυθμίσεις
+            {t('Ρυθμίσεις')}
           </button>
 
           <button
@@ -1142,7 +1267,7 @@ function App() {
             disabled={isSavingTransaction}
           >
             <span>↪</span>
-            Αποσύνδεση
+            {t('Αποσύνδεση')}
           </button>
 
           <div className="profile">
@@ -1159,13 +1284,19 @@ function App() {
         <header className="topbar">
           <div>
             <span className="breadcrumb">
-              EMBER / {activePage.toUpperCase()}
+              EMBER / {t(activePage).toUpperCase()}
             </span>
-            <h1>{activePage}</h1>
+            <h1>{t(activePage)}</h1>
           </div>
 
           <div className="topbar-actions">
-            <button className="language-button">EL</button>
+            <button
+              className="language-button"
+              onClick={toggleLanguage}
+              aria-label="Change language"
+            >
+              {language === 'el' ? 'EL' : 'EN'}
+            </button>
             <button
               className="theme-button"
               onClick={toggleTheme}
@@ -1191,13 +1322,13 @@ function App() {
                   </span>
                   <h2>{activePage}</h2>
                   <p>
-                    Η ενότητα θα συνδεθεί με τα πραγματικά δεδομένα της Ember.
+                    {t('Η ενότητα θα συνδεθεί με τα πραγματικά δεδομένα της Ember.')}
                   </p>
                   <button
                     className="primary-button"
                     onClick={() => setActivePage('Επισκόπηση')}
                   >
-                    Επιστροφή στην επισκόπηση
+                    {t('Επιστροφή στην επισκόπηση')}
                   </button>
                 </section>
               )}
@@ -1215,12 +1346,12 @@ function App() {
             <div className="panel-heading">
               <div>
                 <span className="section-label">
-                  {editingBudget ? 'ΕΠΕΞΕΡΓΑΣΙΑ' : 'ΝΕΑ ΚΑΤΑΧΩΡΗΣΗ'}
+                  {t(editingBudget ? 'ΕΠΕΞΕΡΓΑΣΙΑ' : 'ΝΕΑ ΚΑΤΑΧΩΡΗΣΗ')}
                 </span>
                 <h3 id="budget-form-title">
                   {editingBudget
-                    ? 'Επεξεργασία προϋπολογισμού'
-                    : 'Νέος προϋπολογισμός'}
+                    ? t('Επεξεργασία προϋπολογισμού')
+                    : t('Νέος προϋπολογισμός')}
                 </h3>
               </div>
 
@@ -1229,14 +1360,14 @@ function App() {
                 type="button"
                 onClick={closeBudgetForm}
                 disabled={isSavingBudget}
-                aria-label="Κλείσιμο φόρμας"
+                aria-label={t('Κλείσιμο φόρμας')}
               >
                 ×
               </button>
             </div>
 
             <form className="transaction-form" onSubmit={handleSaveBudget}>
-              <label htmlFor="budget-category">Κατηγορία</label>
+              <label htmlFor="budget-category">{t('Κατηγορία')}</label>
               <input
                 id="budget-category"
                 value={newBudget.category}
@@ -1246,13 +1377,13 @@ function App() {
                     category: event.target.value,
                   }))
                 }
-                placeholder="π.χ. Λογισμικό"
+                placeholder={language === 'en' ? 'e.g. Software' : 'π.χ. Λογισμικό'}
                 maxLength={80}
                 disabled={isSavingBudget}
                 required
               />
 
-              <label htmlFor="budget-limit">Μηνιαίο όριο</label>
+              <label htmlFor="budget-limit">{t('Μηνιαίο όριο')}</label>
               <input
                 id="budget-limit"
                 type="number"
@@ -1271,7 +1402,7 @@ function App() {
               />
 
               <div className="budget-period-note">
-                <span>Περίοδος</span>
+                <span>{t('Περίοδος')}</span>
                 <strong>{currentMonthLabel}</strong>
               </div>
 
@@ -1288,7 +1419,7 @@ function App() {
                   onClick={closeBudgetForm}
                   disabled={isSavingBudget}
                 >
-                  Ακύρωση
+                  {t('Ακύρωση')}
                 </button>
                 <button
                   className="primary-button"
@@ -1296,10 +1427,10 @@ function App() {
                   disabled={isSavingBudget}
                 >
                   {isSavingBudget
-                    ? 'Αποθήκευση...'
+                    ? t('Αποθήκευση...')
                     : editingBudget
-                      ? 'Αποθήκευση αλλαγών'
-                      : 'Αποθήκευση'}
+                      ? t('Αποθήκευση αλλαγών')
+                      : t('Αποθήκευση')}
                 </button>
               </div>
             </form>
@@ -1325,12 +1456,12 @@ function App() {
             <div className="panel-heading">
               <div>
                 <span className="section-label">
-                  {editingTransaction ? 'ΕΠΕΞΕΡΓΑΣΙΑ' : 'ΝΕΑ ΚΑΤΑΧΩΡΗΣΗ'}
+                  {t(editingTransaction ? 'ΕΠΕΞΕΡΓΑΣΙΑ' : 'ΝΕΑ ΚΑΤΑΧΩΡΗΣΗ')}
                 </span>
                 <h3 id="transaction-form-title">
                   {editingTransaction
-                    ? 'Επεξεργασία συναλλαγής'
-                    : 'Νέα συναλλαγή'}
+                    ? t('Επεξεργασία συναλλαγής')
+                    : t('Νέα συναλλαγή')}
                 </h3>
               </div>
 
@@ -1339,7 +1470,7 @@ function App() {
                 type="button"
                 onClick={closeTransactionForm}
                 disabled={isSavingTransaction}
-                aria-label="Κλείσιμο φόρμας"
+                aria-label={t('Κλείσιμο φόρμας')}
               >
                 ×
               </button>
@@ -1349,7 +1480,7 @@ function App() {
               className="transaction-form"
               onSubmit={handleSaveTransaction}
             >
-              <label htmlFor="description">Περιγραφή</label>
+              <label htmlFor="description">{t('Περιγραφή')}</label>
               <input
                 id="description"
                 value={newTransaction.description}
@@ -1359,13 +1490,13 @@ function App() {
                     description: event.target.value,
                   }))
                 }
-                placeholder="π.χ. Ενοίκιο γραφείου"
+                placeholder={language === 'en' ? 'e.g. Office rent' : 'π.χ. Ενοίκιο γραφείου'}
                 maxLength={160}
                 disabled={isSavingTransaction}
                 required
               />
 
-              <label htmlFor="amount">Ποσό</label>
+              <label htmlFor="amount">{t('Ποσό')}</label>
               <input
                 id="amount"
                 type="number"
@@ -1383,7 +1514,7 @@ function App() {
                 required
               />
 
-              <label htmlFor="type">Τύπος</label>
+              <label htmlFor="type">{t('Τύπος')}</label>
               <select
                 id="type"
                 value={newTransaction.type}
@@ -1395,11 +1526,11 @@ function App() {
                 }
                 disabled={isSavingTransaction}
               >
-                <option value={1}>Έσοδο</option>
-                <option value={2}>Έξοδο</option>
+                <option value={1}>{t('Έσοδο')}</option>
+                <option value={2}>{t('Έξοδο')}</option>
               </select>
 
-              <label htmlFor="category">Κατηγορία</label>
+              <label htmlFor="category">{t('Κατηγορία')}</label>
               <input
                 id="category"
                 value={newTransaction.category}
@@ -1409,7 +1540,7 @@ function App() {
                     category: event.target.value,
                   }))
                 }
-                placeholder="π.χ. Λογισμικό"
+                placeholder={language === 'en' ? 'e.g. Software' : 'π.χ. Λογισμικό'}
                 maxLength={80}
                 disabled={isSavingTransaction}
               />
@@ -1427,7 +1558,7 @@ function App() {
                   onClick={closeTransactionForm}
                   disabled={isSavingTransaction}
                 >
-                  Ακύρωση
+                  {t('Ακύρωση')}
                 </button>
                 <button
                   className="primary-button"
@@ -1435,10 +1566,10 @@ function App() {
                   disabled={isSavingTransaction}
                 >
                   {isSavingTransaction
-                    ? 'Αποθήκευση...'
+                    ? t('Αποθήκευση...')
                     : editingTransaction
-                      ? 'Αποθήκευση αλλαγών'
-                      : 'Αποθήκευση'}
+                      ? t('Αποθήκευση αλλαγών')
+                      : t('Αποθήκευση')}
                 </button>
               </div>
             </form>
