@@ -84,6 +84,14 @@ function App() {
   }, [])
 
   useEffect(() => {
+    const savedTheme = window.localStorage.getItem('ember-theme')
+
+    if (savedTheme === 'light') {
+      setDarkMode(false)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!currentUser) {
       setTransactions([])
       return
@@ -165,6 +173,14 @@ function App() {
     } finally {
       setCurrentUser(null)
     }
+  }
+
+  function toggleTheme() {
+    setDarkMode((current) => {
+      const next = !current
+      window.localStorage.setItem('ember-theme', next ? 'dark' : 'light')
+      return next
+    })
   }
 
   function openCreateTransactionForm() {
@@ -291,6 +307,8 @@ function App() {
   const netCashFlow = totalIncome - totalExpense
   const displayName =
     currentUser.fullName || currentUser.email.split('@')[0]
+  const accountPlan =
+    (currentUser as AuthUser & { plan?: string }).plan || 'Free trial'
 
   const normalizedSearch = transactionSearch.trim().toLocaleLowerCase('el-GR')
   const filteredTransactions = transactions.filter((transaction) => {
@@ -591,6 +609,67 @@ function App() {
     </section>
   )
 
+  const settingsPage = (
+    <section className="settings-grid">
+      <article className="panel settings-panel">
+        <div className="panel-heading">
+          <div>
+            <span className="section-label">ΠΡΟΤΙΜΗΣΕΙΣ</span>
+            <h3>Ρυθμίσεις εμφάνισης</h3>
+          </div>
+        </div>
+
+        <div className="settings-list">
+          <div className="settings-row">
+            <div>
+              <strong>Θέμα εφαρμογής</strong>
+              <span>
+                Η επιλογή αποθηκεύεται σε αυτή τη συσκευή.
+              </span>
+            </div>
+            <button className="secondary-button" onClick={toggleTheme}>
+              {darkMode ? 'Σκούρο' : 'Λευκό'}
+            </button>
+          </div>
+
+          <div className="settings-row">
+            <div>
+              <strong>Γλώσσα</strong>
+              <span>Η Ember είναι προσωρινά ρυθμισμένη στα Ελληνικά.</span>
+            </div>
+            <span className="settings-value">EL</span>
+          </div>
+        </div>
+      </article>
+
+      <article className="panel settings-panel">
+        <div className="panel-heading">
+          <div>
+            <span className="section-label">ΛΟΓΑΡΙΑΣΜΟΣ</span>
+            <h3>Το προφίλ σου</h3>
+          </div>
+        </div>
+
+        <div className="settings-list">
+          <div className="settings-row stacked">
+            <span>Email</span>
+            <strong>{currentUser.email}</strong>
+          </div>
+
+          <div className="settings-row stacked">
+            <span>Πλάνο</span>
+            <strong>{accountPlan}</strong>
+          </div>
+
+          <div className="settings-row stacked">
+            <span>Υπόλοιπο δοκιμής</span>
+            <strong>{currentUser.trialDaysRemaining} ημέρες</strong>
+          </div>
+        </div>
+      </article>
+    </section>
+  )
+
   return (
     <div className={`ember-app ${darkMode ? 'dark' : 'light'}`}>
       <aside className="sidebar">
@@ -642,7 +721,12 @@ function App() {
         </nav>
 
         <div className="sidebar-footer">
-          <button className="nav-item">
+          <button
+            className={
+              activePage === 'Ρυθμίσεις' ? 'nav-item active' : 'nav-item'
+            }
+            onClick={() => setActivePage('Ρυθμίσεις')}
+          >
             <span>⚙</span>
             Ρυθμίσεις
           </button>
@@ -679,7 +763,7 @@ function App() {
             <button className="language-button">EL</button>
             <button
               className="theme-button"
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={toggleTheme}
               aria-label="Αλλαγή θέματος"
             >
               {darkMode ? '☀' : '☾'}
@@ -687,23 +771,29 @@ function App() {
           </div>
         </header>
 
-        {activePage === 'Επισκόπηση' ? dashboard : activePage === 'Συναλλαγές' ? transactionsPage : (
-          <section className="empty-page">
-            <span>
-              {navigation.find((item) => item.label === activePage)?.icon}
-            </span>
-            <h2>{activePage}</h2>
-            <p>
-              Η ενότητα θα συνδεθεί με τα πραγματικά δεδομένα της Ember.
-            </p>
-            <button
-              className="primary-button"
-              onClick={() => setActivePage('Επισκόπηση')}
-            >
-              Επιστροφή στην επισκόπηση
-            </button>
-          </section>
-        )}
+        {activePage === 'Επισκόπηση'
+          ? dashboard
+          : activePage === 'Συναλλαγές'
+            ? transactionsPage
+            : activePage === 'Ρυθμίσεις'
+              ? settingsPage
+              : (
+                <section className="empty-page">
+                  <span>
+                    {navigation.find((item) => item.label === activePage)?.icon}
+                  </span>
+                  <h2>{activePage}</h2>
+                  <p>
+                    Η ενότητα θα συνδεθεί με τα πραγματικά δεδομένα της Ember.
+                  </p>
+                  <button
+                    className="primary-button"
+                    onClick={() => setActivePage('Επισκόπηση')}
+                  >
+                    Επιστροφή στην επισκόπηση
+                  </button>
+                </section>
+              )}
       </main>
 
       {showTransactionForm && (

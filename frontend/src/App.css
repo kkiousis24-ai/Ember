@@ -1235,3 +1235,62 @@ main > * {
     grid-template-columns: 1fr;
   }
 }
+
+/* Settings page */
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 18px;
+}
+
+.settings-panel {
+  padding: 23px;
+}
+
+.settings-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 15px 0;
+  border-top: 1px solid var(--border);
+}
+
+.settings-row > div,
+.settings-row.stacked {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.settings-row strong {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.settings-row span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.settings-row .settings-value {
+  padding: 5px 8px;
+  border-radius: 7px;
+  color: var(--accent-text, var(--accent-bright));
+  background: var(--accent-soft);
+  font-weight: 700;
+}
+
+@media (max-width: 1000px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
