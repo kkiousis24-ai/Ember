@@ -938,7 +938,8 @@ main > * {
 }
 
 .transaction-form input,
-.transaction-form select {
+.transaction-form select,
+.transaction-form textarea {
   width: 100%;
   box-sizing: border-box;
   padding: 11px 12px;
@@ -947,6 +948,11 @@ main > * {
   background: var(--background, #0f131b);
   color: var(--text, #f7f8fb);
   font: inherit;
+}
+
+.transaction-form textarea {
+  min-height: 78px;
+  resize: vertical;
 }
 
 .modal-actions {
@@ -1338,9 +1344,181 @@ main > * {
   line-height: 1.65;
 }
 
+/* Subscription page */
+.subscription-header {
+  align-items: center;
+}
+
+.subscription-header h2 {
+  margin-bottom: 4px;
+  font-size: clamp(28px, 4vw, 42px);
+}
+
+.subscription-header p {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.subscription-current {
+  min-width: 140px;
+  display: grid;
+  gap: 5px;
+  padding: 12px 15px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-raised);
+}
+
+.subscription-current span {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.subscription-current strong {
+  color: var(--text);
+  font-size: 15px;
+}
+
+.subscription-trial-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 18px;
+  padding: 20px 23px;
+}
+
+.subscription-trial-panel h3 {
+  margin: 6px 0 0;
+  font-size: 17px;
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.plan-card {
+  position: relative;
+  min-height: 330px;
+  display: flex;
+  flex-direction: column;
+  padding: 23px;
+}
+
+.plan-card h3 {
+  margin: 10px 0 5px;
+  font-size: 22px;
+}
+
+.plan-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.plan-card ul {
+  display: grid;
+  gap: 10px;
+  margin: 25px 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 11px;
+  list-style: none;
+}
+
+.plan-card li::before {
+  margin-right: 8px;
+  content: "✓";
+  color: var(--success);
+}
+
+.plan-card button {
+  width: 100%;
+  margin-top: auto;
+}
+
+.featured-plan {
+  border-color: rgba(255, 99, 51, 0.5);
+  box-shadow: 0 18px 55px rgba(255, 99, 51, 0.11);
+}
+
+.plan-recommended {
+  align-self: flex-start;
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: var(--accent-bright);
+  background: var(--accent-soft);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+}
+
+.subscription-message {
+  margin: 18px 0 0;
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+  background: var(--surface);
+  font-size: 11px;
+}
+
+.subscription-modal {
+  max-width: 480px;
+}
+
+.subscription-modal-content {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  margin: 24px 0 8px;
+  text-align: center;
+}
+
+.subscription-modal-icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  color: var(--accent-bright);
+  background: var(--accent-soft);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.subscription-modal-content p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
 @media (max-width: 700px) {
   .subscription-lock-card {
     padding: 28px 22px;
+  }
+
+  .subscription-header {
+    align-items: flex-start;
+  }
+
+  .subscription-header .subscription-current {
+    width: 100%;
+  }
+
+  .subscription-trial-panel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .plan-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1532,6 +1710,219 @@ main > * {
   padding: 23px;
 }
 
+.goals-header {
+  align-items: center;
+}
+
+.goals-header h2 {
+  margin-bottom: 4px;
+  font-size: clamp(28px, 4vw, 42px);
+}
+
+.goals-header p {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.goal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.goal-card {
+  min-width: 0;
+  padding: 23px;
+}
+
+.goal-card-heading,
+.goal-card-footer,
+.goal-card-amounts {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.goal-card-heading h3 {
+  max-width: 270px;
+  overflow: hidden;
+  margin: 6px 0 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-card-amounts {
+  align-items: flex-end;
+  margin-top: 25px;
+}
+
+.goal-card-amounts > div {
+  display: grid;
+  gap: 5px;
+}
+
+.goal-card-amounts > div:last-child {
+  text-align: right;
+}
+
+.goal-card-amounts span,
+.goal-card-footer span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.goal-card-amounts strong {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.goal-progress {
+  height: 8px;
+  overflow: hidden;
+  margin: 16px 0 11px;
+  border-radius: 999px;
+  background: var(--soft);
+}
+
+.goal-progress span {
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-bright));
+  transition: width 0.25s ease;
+}
+
+.goal-card-footer {
+  margin-bottom: 18px;
+}
+
+.goal-contribution-button {
+  width: 100%;
+}
+
+.goal-modal,
+.contribution-modal {
+  max-width: 560px;
+}
+
+.team-header {
+  align-items: center;
+}
+
+.team-header h2 {
+  margin-bottom: 4px;
+  font-size: clamp(28px, 4vw, 42px);
+}
+
+.team-header p {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.team-panel {
+  margin-top: 18px;
+  padding: 23px;
+}
+
+.team-member-list {
+  margin-top: 16px;
+}
+
+.team-member-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto 100px auto;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 2px;
+  border-top: 1px solid var(--border);
+}
+
+.owner-row {
+  border-top: 0;
+}
+
+.team-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.team-member-identity {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.team-member-identity strong,
+.team-member-identity span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-member-identity strong {
+  color: var(--text);
+  font-size: 11px;
+}
+
+.team-member-identity span {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.team-status {
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.team-status.active {
+  color: var(--success);
+  background: rgba(56, 201, 140, 0.12);
+}
+
+.team-status.pending {
+  color: var(--accent-bright);
+  background: var(--accent-soft);
+}
+
+.team-role-label {
+  color: var(--muted);
+  font-size: 10px;
+  text-align: center;
+}
+
+.team-role-select {
+  min-width: 90px;
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  background: var(--surface-raised);
+  font: inherit;
+  font-size: 10px;
+}
+
+.team-modal {
+  max-width: 500px;
+}
+
+.team-page-error {
+  margin: 14px 0 0;
+}
+
+.form-hint {
+  margin: -3px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
 .report-total {
   color: var(--accent-bright);
   font-size: 16px;
@@ -1601,5 +1992,49 @@ main > * {
   .report-period-pill {
     align-self: stretch;
     text-align: center;
+  }
+
+  .goal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .goals-header {
+    align-items: flex-start;
+  }
+
+  .goals-header .primary-button {
+    width: 100%;
+  }
+
+  .team-header {
+    align-items: flex-start;
+  }
+
+  .team-header .primary-button {
+    width: 100%;
+  }
+
+  .team-member-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .team-status {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .team-role-select {
+    grid-column: 2;
+    width: 100%;
+  }
+
+  .team-member-row .delete-transaction {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+
+  .team-role-label {
+    grid-column: 2;
+    text-align: left;
   }
 }

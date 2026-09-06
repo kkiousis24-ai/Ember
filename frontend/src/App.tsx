@@ -42,6 +42,7 @@ const navigation = [
   { icon: '♙', label: 'Ομάδα' },
   { icon: '□', label: 'Συναντήσεις' },
   { icon: '≡', label: 'Αναφορές' },
+  { icon: '◇', label: 'Συνδρομή' },
 ]
 
 type Language = 'el' | 'en'
@@ -54,6 +55,7 @@ const englishText: Record<string, string> = {
   Ομάδα: 'Team',
   Συναντήσεις: 'Meetings',
   Αναφορές: 'Reports',
+  Συνδρομή: 'Subscription',
   Ρυθμίσεις: 'Settings',
   Αποσύνδεση: 'Log out',
   'Χώρος εργασίας': 'Workspace',
@@ -197,12 +199,31 @@ const englishText: Record<string, string> = {
   'π.χ. maria@company.gr': 'e.g. maria@company.com',
   'Η πρόσκληση θα εμφανιστεί ως εκκρεμής μέχρι να συνδεθεί ο συνεργάτης.': 'The invitation stays pending until the collaborator signs in.',
   'Αφαίρεση μέλους': 'Remove member',
+  'ΠΛΑΝΟ EMBER': 'EMBER PLAN',
+  'Η πρόσβασή σου': 'Your access',
+  'Διαχειρίσου το πλάνο και την πρόσβαση της επιχείρησής σου.': 'Manage your business plan and access.',
+  'Τρέχον πλάνο': 'Current plan',
+  'Η δοκιμή σου λήγει σε': 'Your trial ends in',
+  'Επιλογή πλάνου': 'Choose plan',
+  'Για επαγγελματίες': 'For professionals',
+  'Για μικρές ομάδες': 'For small teams',
+  'Για αναπτυσσόμενες επιχειρήσεις': 'For growing businesses',
+  'Βασικά οικονομικά εργαλεία': 'Core finance tools',
+  'Συναλλαγές και προϋπολογισμοί': 'Transactions and budgets',
+  'Ομάδα και ρόλοι': 'Team and roles',
+  'Αναφορές και export': 'Reports and export',
+  'Όλα του Team': 'Everything in Team',
+  'Προηγμένα permissions': 'Advanced permissions',
+  'Σύντομα διαθέσιμο': 'Available soon',
+  'Η πληρωμή θα συνδεθεί με ασφαλές checkout.': 'Secure checkout will be connected here.',
+  'Επικοινωνία για αναβάθμιση': 'Contact for upgrade',
   'Αναζήτηση συναλλαγών': 'Search transactions',
   'Φίλτρο τύπου συναλλαγής': 'Filter transaction type',
   'Περιγραφή': 'Description',
   Ποσό: 'Amount',
   Τύπος: 'Type',
   'Κλείσιμο φόρμας': 'Close form',
+  Εντάξει: 'Okay',
   'Έσοδο': 'Income',
   'Έξοδο': 'Expense',
   'Φόρτωση Ember...': 'Loading Ember...',
@@ -403,6 +424,8 @@ function App() {
   const [newTeamMember, setNewTeamMember] = useState(createEmptyTeamMember())
   const [isSavingTeam, setIsSavingTeam] = useState(false)
   const teamSaveInProgress = useRef(false)
+  const [subscriptionMessage, setSubscriptionMessage] = useState('')
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
 
   useEffect(() => {
     getCurrentUser()
@@ -572,6 +595,15 @@ function App() {
 
   function formatGoalType(value: string) {
     return goalTypeLabels[value]?.[language] ?? value
+  }
+
+  function handlePlanSelection(planName: string) {
+    setSelectedPlan(planName)
+    setSubscriptionMessage(
+      language === 'en'
+        ? `${planName} will be connected to secure checkout in the next release.`
+        : `Το ${planName} θα συνδεθεί με ασφαλές checkout στο επόμενο release.`,
+    )
   }
 
   function openCreateTransactionForm() {
@@ -1776,6 +1808,93 @@ function App() {
     </>
   )
 
+  const subscriptionPage = (
+    <>
+      <section className="balance-section subscription-header">
+        <div>
+          <span className="section-label">{t('ΠΛΑΝΟ EMBER')}</span>
+          <h2>{t('Η πρόσβασή σου')}</h2>
+          <p>{t('Διαχειρίσου το πλάνο και την πρόσβαση της επιχείρησής σου.')}</p>
+        </div>
+        <div className="subscription-current">
+          <span>{t('Τρέχον πλάνο')}</span>
+          <strong>{accountPlan}</strong>
+        </div>
+      </section>
+
+      <section className="panel subscription-trial-panel">
+        <div>
+          <span className="section-label">{t('Δωρεάν δοκιμή')}</span>
+          <h3>
+            {t('Η δοκιμή σου λήγει σε')} {currentUser.trialDaysRemaining} {t('ημέρες')}
+          </h3>
+        </div>
+        <span className="trial-badge">Trial · {currentUser.trialDaysRemaining}d</span>
+      </section>
+
+      <section className="plan-grid">
+        <article className="panel plan-card">
+          <span className="section-label">EMBER SOLO</span>
+          <h3>Solo</h3>
+          <p>{t('Για επαγγελματίες')}</p>
+          <ul>
+            <li>{t('Βασικά οικονομικά εργαλεία')}</li>
+            <li>{t('Συναλλαγές και προϋπολογισμοί')}</li>
+            <li>{t('Business Goals')}</li>
+          </ul>
+          <button
+            className="secondary-button"
+            onClick={() => handlePlanSelection('Ember Solo')}
+          >
+            {t('Επιλογή πλάνου')}
+          </button>
+        </article>
+
+        <article className="panel plan-card featured-plan">
+          <span className="plan-recommended">RECOMMENDED</span>
+          <span className="section-label">EMBER TEAM</span>
+          <h3>Team</h3>
+          <p>{t('Για μικρές ομάδες')}</p>
+          <ul>
+            <li>{t('Βασικά οικονομικά εργαλεία')}</li>
+            <li>{t('Συναλλαγές και προϋπολογισμοί')}</li>
+            <li>{t('Ομάδα και ρόλοι')}</li>
+            <li>{t('Αναφορές και export')}</li>
+          </ul>
+          <button
+            className="primary-button"
+            onClick={() => handlePlanSelection('Ember Team')}
+          >
+            {t('Επιλογή πλάνου')}
+          </button>
+        </article>
+
+        <article className="panel plan-card">
+          <span className="section-label">EMBER SCALE</span>
+          <h3>Scale</h3>
+          <p>{t('Για αναπτυσσόμενες επιχειρήσεις')}</p>
+          <ul>
+            <li>{t('Όλα του Team')}</li>
+            <li>{t('Προηγμένα permissions')}</li>
+            <li>{t('Σύντομα διαθέσιμο')}</li>
+          </ul>
+          <button
+            className="secondary-button"
+            onClick={() => handlePlanSelection('Ember Scale')}
+          >
+            {t('Επικοινωνία για αναβάθμιση')}
+          </button>
+        </article>
+      </section>
+
+      {subscriptionMessage && (
+        <p className="subscription-message" role="status">
+          {subscriptionMessage}
+        </p>
+      )}
+    </>
+  )
+
   const budgetsPage = (
     <>
       <section className="balance-section budgets-header">
@@ -2087,6 +2206,8 @@ function App() {
                   ? goalsPage
                   : activePage === 'Ομάδα'
                     ? teamPage
+                    : activePage === 'Συνδρομή'
+                      ? subscriptionPage
             : activePage === 'Ρυθμίσεις'
               ? settingsPage
               : (
@@ -2540,6 +2661,55 @@ function App() {
                 </button>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {selectedPlan && (
+        <div
+          className="modal-backdrop"
+          onMouseDown={() => setSelectedPlan(null)}
+        >
+          <section
+            className="transaction-modal subscription-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="subscription-modal-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="panel-heading">
+              <div>
+                <span className="section-label">EMBER SUBSCRIPTION</span>
+                <h3 id="subscription-modal-title">{selectedPlan}</h3>
+              </div>
+              <button
+                className="more-button"
+                type="button"
+                onClick={() => setSelectedPlan(null)}
+                aria-label={t('Κλείσιμο φόρμας')}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="subscription-modal-content">
+              <div className="subscription-modal-icon">✓</div>
+              <p>
+                {language === 'en'
+                  ? 'Your plan selection is ready. Secure checkout will be connected in the next release.'
+                  : 'Η επιλογή του πλάνου είναι έτοιμη. Το ασφαλές checkout θα συνδεθεί στο επόμενο release.'}
+              </p>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="primary-button"
+                type="button"
+                onClick={() => setSelectedPlan(null)}
+              >
+                {t('Εντάξει')}
+              </button>
+            </div>
           </section>
         </div>
       )}
