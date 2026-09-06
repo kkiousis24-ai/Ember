@@ -14,5 +14,6 @@ public sealed class EmberDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Transaction> Transactions => Set<Transaction>();
 
     public DbSet<Budget> Budgets => Set<Budget>();
-}
 
+    public DbSet<BusinessGoal> BusinessGoals => Set<BusinessGoal>();
+}

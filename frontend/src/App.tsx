@@ -16,6 +16,14 @@ import {
   updateBudget,
   type Budget,
 } from './services/budgets'
+import {
+  addGoalContribution,
+  createGoal,
+  deleteGoal,
+  getGoals,
+  updateGoal,
+  type BusinessGoal,
+} from './services/goals'
 import './App.css'
 
 const navigation = [
@@ -126,6 +134,39 @@ const englishText: Record<string, string> = {
   'Μέσο έξοδο': 'Average expense',
   'Μεγαλύτερη κατηγορία': 'Top category',
   'Καμία κατηγορία': 'No category',
+  'ΣΤΟΧΟΙ ΕΠΙΧΕΙΡΗΣΗΣ': 'BUSINESS GOALS',
+  'Στόχοι επιχείρησης': 'Business goals',
+  'Δημιούργησε στόχους που οδηγούν την επιχείρησή σου μπροστά.': 'Create goals that move your business forward.',
+  '+ Νέος στόχος': '+ New goal',
+  'Δεν υπάρχουν ακόμη στόχοι.': 'No goals yet.',
+  'Δημιούργησε τον πρώτο επιχειρηματικό σου στόχο.': 'Create your first business goal.',
+  '+ Δημιουργία στόχου': '+ Create goal',
+  'Ενεργοί στόχοι': 'Active goals',
+  'Ολοκληρωμένοι': 'Completed',
+  'Συνολικό κεφάλαιο στόχων': 'Total goal capital',
+  'Πρόοδος': 'Progress',
+  'Προσθήκη ποσού': 'Add contribution',
+  'Επεξεργασία στόχου': 'Edit goal',
+  'Διαγραφή στόχου': 'Delete goal',
+  'Ολοκληρώθηκε': 'Completed',
+  'Προθεσμία': 'Deadline',
+  'Χωρίς προθεσμία': 'No deadline',
+  'Νέος στόχος': 'New goal',
+  'Όνομα στόχου': 'Goal name',
+  'Τύπος στόχου': 'Goal type',
+  'Ποσό-στόχος': 'Target amount',
+  'Τρέχουσα πρόοδος': 'Current progress',
+  'Σημειώσεις': 'Notes',
+  'π.χ. Ταμειακό απόθεμα 3 μηνών': 'e.g. Three-month cash reserve',
+  'π.χ. Κεφάλαιο για νέο εξοπλισμό': 'e.g. Capital for new equipment',
+  'Επιλογή επιχειρηματικού στόχου': 'Choose a business goal',
+  'Custom': 'Custom',
+  'Φορολογία / ΦΠΑ': 'Tax / VAT reserve',
+  'Ταμειακό απόθεμα': 'Cash reserve',
+  'Εξοπλισμός': 'Equipment',
+  'Marketing': 'Marketing',
+  'Μισθοδοσία': 'Payroll',
+  'Επέκταση επιχείρησης': 'Business expansion',
   'Αναζήτηση συναλλαγών': 'Search transactions',
   'Φίλτρο τύπου συναλλαγής': 'Filter transaction type',
   'Περιγραφή': 'Description',
@@ -249,6 +290,30 @@ function createEmptyBudget() {
   }
 }
 
+function createEmptyGoal() {
+  return {
+    name: '',
+    goalType: 'Custom',
+    targetAmount: '',
+    currentAmount: '0',
+    deadline: '',
+    notes: '',
+  }
+}
+
+const goalTypeLabels: Record<string, { el: string; en: string }> = {
+  Custom: { el: 'Custom', en: 'Custom' },
+  'Tax / VAT': { el: 'Φορολογία / ΦΠΑ', en: 'Tax / VAT' },
+  'Cash reserve': { el: 'Ταμειακό απόθεμα', en: 'Cash reserve' },
+  Equipment: { el: 'Εξοπλισμός', en: 'Equipment' },
+  Marketing: { el: 'Marketing', en: 'Marketing' },
+  Payroll: { el: 'Μισθοδοσία', en: 'Payroll' },
+  'Business expansion': {
+    el: 'Επέκταση επιχείρησης',
+    en: 'Business expansion',
+  },
+}
+
 type AccessUser = AuthUser & {
   hasActiveAccess?: boolean
 }
@@ -282,6 +347,17 @@ function App() {
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null)
   const [isSavingBudget, setIsSavingBudget] = useState(false)
   const budgetSaveInProgress = useRef(false)
+  const [goals, setGoals] = useState<BusinessGoal[]>([])
+  const [isLoadingGoals, setIsLoadingGoals] = useState(false)
+  const [showGoalForm, setShowGoalForm] = useState(false)
+  const [goalError, setGoalError] = useState('')
+  const [newGoal, setNewGoal] = useState(createEmptyGoal())
+  const [editingGoal, setEditingGoal] = useState<BusinessGoal | null>(null)
+  const [contributionGoal, setContributionGoal] =
+    useState<BusinessGoal | null>(null)
+  const [contributionAmount, setContributionAmount] = useState('')
+  const [isSavingGoal, setIsSavingGoal] = useState(false)
+  const goalSaveInProgress = useRef(false)
 
   useEffect(() => {
     getCurrentUser()
@@ -329,6 +405,20 @@ function App() {
       .then(setBudgets)
       .catch(() => setBudgets([]))
       .finally(() => setIsLoadingBudgets(false))
+  }, [currentUser])
+
+  useEffect(() => {
+    if (!currentUser) {
+      setGoals([])
+      return
+    }
+
+    setIsLoadingGoals(true)
+
+    getGoals()
+      .then(setGoals)
+      .catch(() => setGoals([]))
+      .finally(() => setIsLoadingGoals(false))
   }, [currentUser])
 
   useEffect(() => {
@@ -419,6 +509,10 @@ function App() {
 
   function t(value: string) {
     return language === 'en' ? englishText[value] ?? value : value
+  }
+
+  function formatGoalType(value: string) {
+    return goalTypeLabels[value]?.[language] ?? value
   }
 
   function openCreateTransactionForm() {
@@ -619,6 +713,173 @@ function App() {
   async function handleDeleteBudget(id: string) {
     await deleteBudget(id)
     setBudgets((items) => items.filter((item) => item.id !== id))
+  }
+
+  function openCreateGoalForm() {
+    if (goalSaveInProgress.current) return
+
+    setEditingGoal(null)
+    setNewGoal(createEmptyGoal())
+    setGoalError('')
+    setShowGoalForm(true)
+  }
+
+  function openEditGoalForm(goal: BusinessGoal) {
+    if (goalSaveInProgress.current) return
+
+    setEditingGoal(goal)
+    setNewGoal({
+      name: goal.name,
+      goalType: goal.goalType,
+      targetAmount: String(goal.targetAmount),
+      currentAmount: String(goal.currentAmount),
+      deadline: goal.deadlineUtc ? goal.deadlineUtc.slice(0, 10) : '',
+      notes: goal.notes ?? '',
+    })
+    setGoalError('')
+    setShowGoalForm(true)
+  }
+
+  function closeGoalForm() {
+    if (goalSaveInProgress.current) return
+
+    setShowGoalForm(false)
+    setEditingGoal(null)
+    setNewGoal(createEmptyGoal())
+    setGoalError('')
+  }
+
+  async function handleSaveGoal(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (goalSaveInProgress.current) return
+
+    setGoalError('')
+
+    const targetAmount = Number(newGoal.targetAmount.replace(',', '.'))
+    const currentAmount = Number(newGoal.currentAmount.replace(',', '.'))
+
+    if (!newGoal.name.trim()) {
+      setGoalError(language === 'en' ? 'Enter a goal name.' : 'Γράψε ένα όνομα στόχου.')
+      return
+    }
+
+    if (!Number.isFinite(targetAmount) || targetAmount <= 0) {
+      setGoalError(
+        language === 'en'
+          ? 'The target must be greater than zero.'
+          : 'Ο στόχος πρέπει να είναι μεγαλύτερος από μηδέν.',
+      )
+      return
+    }
+
+    if (!Number.isFinite(currentAmount) || currentAmount < 0) {
+      setGoalError(
+        language === 'en'
+          ? 'Progress cannot be negative.'
+          : 'Η πρόοδος δεν μπορεί να είναι αρνητική.',
+      )
+      return
+    }
+
+    goalSaveInProgress.current = true
+    setIsSavingGoal(true)
+
+    try {
+      const input = {
+        name: newGoal.name.trim(),
+        goalType: newGoal.goalType,
+        targetAmount,
+        currentAmount,
+        deadlineUtc: newGoal.deadline
+          ? new Date(`${newGoal.deadline}T23:59:59`).toISOString()
+          : undefined,
+        notes: newGoal.notes.trim() || undefined,
+      }
+
+      if (editingGoal) {
+        const goal = await updateGoal(editingGoal.id, input)
+        setGoals((items) =>
+          items.map((item) => (item.id === goal.id ? goal : item)),
+        )
+      } else {
+        const goal = await createGoal(input)
+        setGoals((items) => [goal, ...items])
+      }
+
+      goalSaveInProgress.current = false
+      closeGoalForm()
+    } catch (error) {
+      setGoalError(
+        error instanceof Error
+          ? error.message
+          : language === 'en'
+            ? 'The goal could not be saved.'
+            : 'Δεν ήταν δυνατή η αποθήκευση του στόχου.',
+      )
+    } finally {
+      goalSaveInProgress.current = false
+      setIsSavingGoal(false)
+    }
+  }
+
+  async function handleDeleteGoal(id: string) {
+    await deleteGoal(id)
+    setGoals((items) => items.filter((item) => item.id !== id))
+  }
+
+  function openContributionForm(goal: BusinessGoal) {
+    setContributionGoal(goal)
+    setContributionAmount('')
+    setGoalError('')
+  }
+
+  function closeContributionForm() {
+    if (goalSaveInProgress.current) return
+
+    setContributionGoal(null)
+    setContributionAmount('')
+    setGoalError('')
+  }
+
+  async function handleAddContribution(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (goalSaveInProgress.current || !contributionGoal) return
+
+    const amount = Number(contributionAmount.replace(',', '.'))
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setGoalError(
+        language === 'en'
+          ? 'The contribution must be greater than zero.'
+          : 'Το ποσό πρέπει να είναι μεγαλύτερο από μηδέν.',
+      )
+      return
+    }
+
+    goalSaveInProgress.current = true
+    setIsSavingGoal(true)
+
+    try {
+      const goal = await addGoalContribution(contributionGoal.id, amount)
+      setGoals((items) =>
+        items.map((item) => (item.id === goal.id ? goal : item)),
+      )
+      goalSaveInProgress.current = false
+      closeContributionForm()
+    } catch (error) {
+      setGoalError(
+        error instanceof Error
+          ? error.message
+          : language === 'en'
+            ? 'The contribution could not be saved.'
+            : 'Δεν ήταν δυνατή η αποθήκευση του ποσού.',
+      )
+    } finally {
+      goalSaveInProgress.current = false
+      setIsSavingGoal(false)
+    }
   }
 
   if (checkingSession) {
@@ -1095,6 +1356,132 @@ function App() {
     </>
   )
 
+  const completedGoals = goals.filter((goal) => goal.isCompleted).length
+  const totalGoalCapital = goals.reduce(
+    (total, goal) => total + goal.currentAmount,
+    0,
+  )
+
+  const goalsPage = (
+    <>
+      <section className="balance-section goals-header">
+        <div>
+          <span className="section-label">{t('ΣΤΟΧΟΙ ΕΠΙΧΕΙΡΗΣΗΣ')}</span>
+          <h2>{t('Στόχοι επιχείρησης')}</h2>
+          <p>{t('Δημιούργησε στόχους που οδηγούν την επιχείρησή σου μπροστά.')}</p>
+        </div>
+
+        <button
+          className="primary-button"
+          onClick={openCreateGoalForm}
+          disabled={isSavingGoal}
+        >
+          {t('+ Νέος στόχος')}
+        </button>
+      </section>
+
+      <section className="metrics">
+        <div className="metric">
+          <span>{t('Ενεργοί στόχοι')}</span>
+          <strong>{goals.length - completedGoals}</strong>
+          <small>{t('Στόχοι επιχείρησης')}</small>
+        </div>
+        <div className="metric">
+          <span>{t('Ολοκληρωμένοι')}</span>
+          <strong>{completedGoals}</strong>
+          <small>{t('Ολοκληρώθηκε')}</small>
+        </div>
+        <div className="metric">
+          <span>{t('Συνολικό κεφάλαιο στόχων')}</span>
+          <strong>{formatCurrency(totalGoalCapital)}</strong>
+          <small>{t('Τρέχουσα πρόοδος')}</small>
+        </div>
+      </section>
+
+      {isLoadingGoals && (
+        <p className="transactions-empty">{language === 'en' ? 'Loading goals...' : 'Φόρτωση στόχων...'}</p>
+      )}
+
+      {!isLoadingGoals && goals.length === 0 && (
+        <div className="panel budget-empty">
+          <span>◎</span>
+          <h3>{t('Δεν υπάρχουν ακόμη στόχοι.')}</h3>
+          <p>{t('Δημιούργησε τον πρώτο επιχειρηματικό σου στόχο.')}</p>
+          <button className="primary-button" onClick={openCreateGoalForm}>
+            {t('+ Δημιουργία στόχου')}
+          </button>
+        </div>
+      )}
+
+      {!isLoadingGoals && goals.length > 0 && (
+        <section className="goal-grid">
+          {goals.map((goal) => (
+            <article className="panel goal-card" key={goal.id}>
+              <div className="goal-card-heading">
+                <div>
+                  <span className="section-label">{formatGoalType(goal.goalType)}</span>
+                  <h3>{goal.name}</h3>
+                </div>
+                <div className="budget-card-actions">
+                  <button
+                    className="more-button"
+                    onClick={() => openEditGoalForm(goal)}
+                    disabled={isSavingGoal}
+                    aria-label={`${t('Επεξεργασία στόχου')}: ${goal.name}`}
+                  >
+                    ✎
+                  </button>
+                  <button
+                    className="delete-transaction"
+                    onClick={() => handleDeleteGoal(goal.id)}
+                    disabled={isSavingGoal}
+                    aria-label={`${t('Διαγραφή στόχου')}: ${goal.name}`}
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              <div className="goal-card-amounts">
+                <div>
+                  <span>{t('Πρόοδος')}</span>
+                  <strong>{formatCurrency(goal.currentAmount)}</strong>
+                </div>
+                <div>
+                  <span>{t('Ποσό-στόχος')}</span>
+                  <strong>{formatCurrency(goal.targetAmount)}</strong>
+                </div>
+              </div>
+
+              <div className="goal-progress" aria-label={t('Πρόοδος')}>
+                <span style={{ width: `${goal.progressPercentage}%` }} />
+              </div>
+
+              <div className="goal-card-footer">
+                <span>{Math.round(goal.progressPercentage)}%</span>
+                <span>
+                  {goal.isCompleted
+                    ? t('Ολοκληρώθηκε')
+                    : goal.deadlineUtc
+                      ? `${t('Προθεσμία')}: ${formatDate(goal.deadlineUtc)}`
+                      : t('Χωρίς προθεσμία')}
+                </span>
+              </div>
+
+              <button
+                className="secondary-button goal-contribution-button"
+                onClick={() => openContributionForm(goal)}
+                disabled={isSavingGoal || goal.isCompleted}
+              >
+                + {t('Προσθήκη ποσού')}
+              </button>
+            </article>
+          ))}
+        </section>
+      )}
+    </>
+  )
+
   const budgetsPage = (
     <>
       <section className="balance-section budgets-header">
@@ -1402,6 +1789,8 @@ function App() {
               ? budgetsPage
               : activePage === 'Αναφορές'
                 ? reportsPage
+                : activePage === 'Αποταμίευση'
+                  ? goalsPage
             : activePage === 'Ρυθμίσεις'
               ? settingsPage
               : (
@@ -1520,6 +1909,231 @@ function App() {
                     : editingBudget
                       ? t('Αποθήκευση αλλαγών')
                       : t('Αποθήκευση')}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+
+      {showGoalForm && (
+        <div className="modal-backdrop" onMouseDown={closeGoalForm}>
+          <section
+            className="transaction-modal goal-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="goal-form-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="panel-heading">
+              <div>
+                <span className="section-label">
+                  {t(editingGoal ? 'ΕΠΕΞΕΡΓΑΣΙΑ' : 'ΝΕΑ ΚΑΤΑΧΩΡΗΣΗ')}
+                </span>
+                <h3 id="goal-form-title">
+                  {editingGoal ? t('Επεξεργασία στόχου') : t('Νέος στόχος')}
+                </h3>
+              </div>
+
+              <button
+                className="more-button"
+                type="button"
+                onClick={closeGoalForm}
+                disabled={isSavingGoal}
+                aria-label={t('Κλείσιμο φόρμας')}
+              >
+                ×
+              </button>
+            </div>
+
+            <form className="transaction-form" onSubmit={handleSaveGoal}>
+              <label htmlFor="goal-name">{t('Όνομα στόχου')}</label>
+              <input
+                id="goal-name"
+                value={newGoal.name}
+                onChange={(event) =>
+                  setNewGoal((form) => ({ ...form, name: event.target.value }))
+                }
+                placeholder={t('π.χ. Ταμειακό απόθεμα 3 μηνών')}
+                maxLength={120}
+                disabled={isSavingGoal}
+                required
+              />
+
+              <label htmlFor="goal-type">{t('Τύπος στόχου')}</label>
+              <select
+                id="goal-type"
+                value={newGoal.goalType}
+                onChange={(event) =>
+                  setNewGoal((form) => ({
+                    ...form,
+                    goalType: event.target.value,
+                  }))
+                }
+                disabled={isSavingGoal}
+              >
+                <option value="Custom">{t('Custom')}</option>
+                <option value="Tax / VAT">{t('Φορολογία / ΦΠΑ')}</option>
+                <option value="Cash reserve">{t('Ταμειακό απόθεμα')}</option>
+                <option value="Equipment">{t('Εξοπλισμός')}</option>
+                <option value="Marketing">{t('Marketing')}</option>
+                <option value="Payroll">{t('Μισθοδοσία')}</option>
+                <option value="Business expansion">
+                  {t('Επέκταση επιχείρησης')}
+                </option>
+              </select>
+
+              <label htmlFor="goal-target">{t('Ποσό-στόχος')}</label>
+              <input
+                id="goal-target"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={newGoal.targetAmount}
+                onChange={(event) =>
+                  setNewGoal((form) => ({
+                    ...form,
+                    targetAmount: event.target.value,
+                  }))
+                }
+                placeholder="0,00"
+                disabled={isSavingGoal}
+                required
+              />
+
+              <label htmlFor="goal-current">{t('Τρέχουσα πρόοδος')}</label>
+              <input
+                id="goal-current"
+                type="number"
+                min="0"
+                step="0.01"
+                value={newGoal.currentAmount}
+                onChange={(event) =>
+                  setNewGoal((form) => ({
+                    ...form,
+                    currentAmount: event.target.value,
+                  }))
+                }
+                placeholder="0,00"
+                disabled={isSavingGoal}
+              />
+
+              <label htmlFor="goal-deadline">{t('Προθεσμία')}</label>
+              <input
+                id="goal-deadline"
+                type="date"
+                value={newGoal.deadline}
+                onChange={(event) =>
+                  setNewGoal((form) => ({
+                    ...form,
+                    deadline: event.target.value,
+                  }))
+                }
+                disabled={isSavingGoal}
+              />
+
+              <label htmlFor="goal-notes">{t('Σημειώσεις')}</label>
+              <textarea
+                id="goal-notes"
+                value={newGoal.notes}
+                onChange={(event) =>
+                  setNewGoal((form) => ({ ...form, notes: event.target.value }))
+                }
+                placeholder={t('π.χ. Κεφάλαιο για νέο εξοπλισμό')}
+                maxLength={300}
+                rows={3}
+                disabled={isSavingGoal}
+              />
+
+              {goalError && (
+                <p className="auth-error" role="alert">
+                  {goalError}
+                </p>
+              )}
+
+              <div className="modal-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={closeGoalForm}
+                  disabled={isSavingGoal}
+                >
+                  {t('Ακύρωση')}
+                </button>
+                <button
+                  className="primary-button"
+                  type="submit"
+                  disabled={isSavingGoal}
+                >
+                  {isSavingGoal ? t('Αποθήκευση...') : t('Αποθήκευση')}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+
+      {contributionGoal && (
+        <div className="modal-backdrop" onMouseDown={closeContributionForm}>
+          <section
+            className="transaction-modal contribution-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contribution-form-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="panel-heading">
+              <div>
+                <span className="section-label">{t('Προσθήκη ποσού')}</span>
+                <h3 id="contribution-form-title">{contributionGoal.name}</h3>
+              </div>
+              <button
+                className="more-button"
+                type="button"
+                onClick={closeContributionForm}
+                disabled={isSavingGoal}
+                aria-label={t('Κλείσιμο φόρμας')}
+              >
+                ×
+              </button>
+            </div>
+
+            <form className="transaction-form" onSubmit={handleAddContribution}>
+              <label htmlFor="contribution-amount">{t('Ποσό')}</label>
+              <input
+                id="contribution-amount"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={contributionAmount}
+                onChange={(event) => setContributionAmount(event.target.value)}
+                placeholder="0,00"
+                disabled={isSavingGoal}
+                autoFocus
+                required
+              />
+
+              {goalError && (
+                <p className="auth-error" role="alert">
+                  {goalError}
+                </p>
+              )}
+
+              <div className="modal-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={closeContributionForm}
+                  disabled={isSavingGoal}
+                >
+                  {t('Ακύρωση')}
+                </button>
+                <button
+                  className="primary-button"
+                  type="submit"
+                  disabled={isSavingGoal}
+                >
+                  {isSavingGoal ? t('Αποθήκευση...') : t('Προσθήκη ποσού')}
                 </button>
               </div>
             </form>
