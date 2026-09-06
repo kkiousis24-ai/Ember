@@ -1,10 +1,11 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import AuthScreen from './components/AuthScreen'
 import { getCurrentUser, logout, type AuthUser } from './services/auth'
 import {
   createTransaction,
   deleteTransaction,
   getTransactions,
+  updateTransaction,
   type Transaction,
   type TransactionType,
 } from './services/transactions'
@@ -64,6 +65,11 @@ function App() {
   const [newTransaction, setNewTransaction] = useState(
     createEmptyTransaction(),
   )
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null)
+  const [isSavingTransaction, setIsSavingTransaction] = useState(false)
+  const saveInProgress = useRef(false)
+  const transactionModalRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     getCurrentUser()
@@ -86,6 +92,68 @@ function App() {
       .finally(() => setIsLoadingTransactions(false))
   }, [currentUser])
 
+  useEffect(() => {
+    if (!showTransactionForm) return
+
+    const modal = transactionModalRef.current
+    if (!modal) return
+
+    const previousFocus = document.activeElement
+    modal.querySelector<HTMLInputElement>('#description')?.focus()
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+
+        if (!saveInProgress.current) {
+          setShowTransactionForm(false)
+          setEditingTransaction(null)
+          setNewTransaction(createEmptyTransaction())
+          setTransactionError('')
+        }
+
+        return
+      }
+
+      if (event.key !== 'Tab') return
+
+      const elements = modal.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled])',
+      )
+      const first = elements.item(0)
+      const last = elements.item(elements.length - 1)
+
+      if (!first || !last) {
+        event.preventDefault()
+        modal.focus()
+        return
+      }
+
+      const focusOutside = !modal.contains(document.activeElement)
+
+      if (event.shiftKey && (document.activeElement === first || focusOutside)) {
+        event.preventDefault()
+        last.focus()
+      } else if (
+        !event.shiftKey &&
+        (document.activeElement === last || focusOutside)
+      ) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
+        previousFocus.focus()
+      }
+    }
+  }, [showTransactionForm])
+
   async function handleLogout() {
     try {
       await logout()
@@ -94,10 +162,45 @@ function App() {
     }
   }
 
-  async function handleCreateTransaction(
+  function openCreateTransactionForm() {
+    if (saveInProgress.current) return
+
+    setEditingTransaction(null)
+    setNewTransaction(createEmptyTransaction())
+    setTransactionError('')
+    setShowTransactionForm(true)
+  }
+
+  function openEditTransactionForm(transaction: Transaction) {
+    if (saveInProgress.current) return
+
+    setEditingTransaction(transaction)
+    setNewTransaction({
+      description: transaction.description,
+      amount: String(transaction.amount),
+      type: transaction.type,
+      category: transaction.category,
+    })
+    setTransactionError('')
+    setShowTransactionForm(true)
+  }
+
+  function closeTransactionForm() {
+    if (saveInProgress.current) return
+
+    setShowTransactionForm(false)
+    setEditingTransaction(null)
+    setNewTransaction(createEmptyTransaction())
+    setTransactionError('')
+  }
+
+  async function handleSaveTransaction(
     event: FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault()
+
+    if (saveInProgress.current) return
+
     setTransactionError('')
 
     const amount = Number(newTransaction.amount.replace(',', '.'))
@@ -112,17 +215,40 @@ function App() {
       return
     }
 
-    try {
-      const transaction = await createTransaction({
-        description: newTransaction.description.trim(),
-        amount,
-        type: newTransaction.type,
-        category: newTransaction.category.trim() || 'Άλλο',
-        isRecurring: false,
-      })
+    const input = {
+      description: newTransaction.description.trim(),
+      amount,
+      type: newTransaction.type,
+      category: newTransaction.category.trim() || 'Άλλο',
+    }
 
-      setTransactions((items) => [transaction, ...items])
+    saveInProgress.current = true
+    setIsSavingTransaction(true)
+
+    try {
+      if (editingTransaction) {
+        const transaction = await updateTransaction(editingTransaction.id, {
+          ...input,
+          occurredAtUtc: editingTransaction.occurredAtUtc,
+          isRecurring: editingTransaction.isRecurring,
+        })
+
+        setTransactions((items) =>
+          items.map((item) =>
+            item.id === transaction.id ? transaction : item,
+          ),
+        )
+      } else {
+        const transaction = await createTransaction({
+          ...input,
+          isRecurring: false,
+        })
+
+        setTransactions((items) => [transaction, ...items])
+      }
+
       setNewTransaction(createEmptyTransaction())
+      setEditingTransaction(null)
       setShowTransactionForm(false)
     } catch (error) {
       setTransactionError(
@@ -130,6 +256,9 @@ function App() {
           ? error.message
           : 'Δεν ήταν δυνατή η αποθήκευση.',
       )
+    } finally {
+      saveInProgress.current = false
+      setIsSavingTransaction(false)
     }
   }
 
@@ -177,10 +306,8 @@ function App() {
           <button className="secondary-button">Εξαγωγή</button>
           <button
             className="primary-button"
-            onClick={() => {
-              setTransactionError('')
-              setShowTransactionForm(true)
-            }}
+            onClick={openCreateTransactionForm}
+            disabled={isSavingTransaction}
           >
             + Νέα συναλλαγή
           </button>
@@ -325,7 +452,19 @@ function App() {
 
               <div className="transaction-name">
                 <strong>{transaction.description}</strong>
-                <span>{transaction.category}</span>
+                <span>
+                  {transaction.category}{' · '}
+                  <button
+                    type="button"
+                    className="text-button"
+                    style={{ padding: 0, fontSize: 'inherit' }}
+                    onClick={() => openEditTransactionForm(transaction)}
+                    disabled={isSavingTransaction}
+                    aria-label={`Επεξεργασία συναλλαγής: ${transaction.description}`}
+                  >
+                    Επεξεργασία
+                  </button>
+                </span>
               </div>
 
               <span className="transaction-date">
@@ -344,6 +483,7 @@ function App() {
               <button
                 className="delete-transaction"
                 onClick={() => handleDeleteTransaction(transaction.id)}
+                disabled={isSavingTransaction}
                 aria-label="Διαγραφή συναλλαγής"
               >
                 ×
@@ -411,7 +551,11 @@ function App() {
             Ρυθμίσεις
           </button>
 
-          <button className="nav-item" onClick={handleLogout}>
+          <button
+            className="nav-item"
+            onClick={handleLogout}
+            disabled={isSavingTransaction}
+          >
             <span>↪</span>
             Αποσύνδεση
           </button>
@@ -471,23 +615,36 @@ function App() {
       {showTransactionForm && (
         <div
           className="modal-backdrop"
-          onMouseDown={() => setShowTransactionForm(false)}
+          onMouseDown={closeTransactionForm}
         >
           <section
+            ref={transactionModalRef}
             className="transaction-modal"
             role="dialog"
             aria-modal="true"
+            aria-labelledby="transaction-form-title"
+            aria-busy={isSavingTransaction}
+            tabIndex={-1}
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="panel-heading">
               <div>
-                <span className="section-label">ΝΕΑ ΚΑΤΑΧΩΡΗΣΗ</span>
-                <h3>Νέα συναλλαγή</h3>
+                <span className="section-label">
+                  {editingTransaction ? 'ΕΠΕΞΕΡΓΑΣΙΑ' : 'ΝΕΑ ΚΑΤΑΧΩΡΗΣΗ'}
+                </span>
+                <h3 id="transaction-form-title">
+                  {editingTransaction
+                    ? 'Επεξεργασία συναλλαγής'
+                    : 'Νέα συναλλαγή'}
+                </h3>
               </div>
 
               <button
                 className="more-button"
-                onClick={() => setShowTransactionForm(false)}
+                type="button"
+                onClick={closeTransactionForm}
+                disabled={isSavingTransaction}
+                aria-label="Κλείσιμο φόρμας"
               >
                 ×
               </button>
@@ -495,7 +652,7 @@ function App() {
 
             <form
               className="transaction-form"
-              onSubmit={handleCreateTransaction}
+              onSubmit={handleSaveTransaction}
             >
               <label htmlFor="description">Περιγραφή</label>
               <input
@@ -508,6 +665,8 @@ function App() {
                   }))
                 }
                 placeholder="π.χ. Ενοίκιο γραφείου"
+                maxLength={160}
+                disabled={isSavingTransaction}
                 required
               />
 
@@ -525,6 +684,7 @@ function App() {
                   }))
                 }
                 placeholder="0,00"
+                disabled={isSavingTransaction}
                 required
               />
 
@@ -538,6 +698,7 @@ function App() {
                     type: Number(event.target.value) as TransactionType,
                   }))
                 }
+                disabled={isSavingTransaction}
               >
                 <option value={1}>Έσοδο</option>
                 <option value={2}>Έξοδο</option>
@@ -554,22 +715,35 @@ function App() {
                   }))
                 }
                 placeholder="π.χ. Λογισμικό"
+                maxLength={80}
+                disabled={isSavingTransaction}
               />
 
               {transactionError && (
-                <p className="auth-error">{transactionError}</p>
+                <p className="auth-error" role="alert">
+                  {transactionError}
+                </p>
               )}
 
               <div className="modal-actions">
                 <button
                   className="secondary-button"
                   type="button"
-                  onClick={() => setShowTransactionForm(false)}
+                  onClick={closeTransactionForm}
+                  disabled={isSavingTransaction}
                 >
                   Ακύρωση
                 </button>
-                <button className="primary-button" type="submit">
-                  Αποθήκευση
+                <button
+                  className="primary-button"
+                  type="submit"
+                  disabled={isSavingTransaction}
+                >
+                  {isSavingTransaction
+                    ? 'Αποθήκευση...'
+                    : editingTransaction
+                      ? 'Αποθήκευση αλλαγών'
+                      : 'Αποθήκευση'}
                 </button>
               </div>
             </form>

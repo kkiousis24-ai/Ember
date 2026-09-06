@@ -958,3 +958,176 @@ main > * {
   gap: 10px;
   margin-top: 4px;
 }
+
+/*
+ * Light-theme contrast.
+ * Every rule below is scoped to .ember-app.light: dark mode,
+ * the flame logo, layout and responsive breakpoints stay unchanged.
+ */
+.ember-app.light {
+  color-scheme: light;
+  --text: #151619;
+  --muted: #545b65;
+  --success: #176b43;
+  --accent-text: #a83310;
+  --action-background: #bd3a15;
+  --action-hover: #a83310;
+  --danger: #b42332;
+  --field-border: #8a9099;
+
+  color: var(--text);
+  background-color: var(--background);
+}
+
+/* Explicit foregrounds prevent generic heading/text styles leaking in. */
+.ember-app.light :is(h1, h2, h3, h4, h5, h6),
+.ember-app.light .brand strong,
+.ember-app.light .workspace strong,
+.ember-app.light .profile strong,
+.ember-app.light .metric strong,
+.ember-app.light .month-list strong,
+.ember-app.light .transaction-name strong,
+.ember-app.light .amount:not(.income) {
+  color: var(--text);
+}
+
+.ember-app.light .sidebar,
+.ember-app.light main,
+.ember-app.light .panel,
+.ember-app.light .balance-section,
+.ember-app.light .empty-page,
+.ember-app.light .transaction-modal {
+  color: var(--text);
+}
+
+.ember-app.light .breadcrumb,
+.ember-app.light .section-label,
+.ember-app.light .workspace > div span,
+.ember-app.light .profile span,
+.ember-app.light .balance-section p,
+.ember-app.light .metric > span,
+.ember-app.light .metric small,
+.ember-app.light .legend,
+.ember-app.light .legend > span,
+.ember-app.light .chart-column small,
+.ember-app.light .month-list span,
+.ember-app.light .transaction-name span,
+.ember-app.light .transaction-date,
+.ember-app.light .transactions-empty,
+.ember-app.light .empty-page p {
+  color: var(--muted);
+}
+
+.ember-app.light .nav-item {
+  color: var(--muted);
+}
+
+.ember-app.light .nav-item > span {
+  color: inherit;
+}
+
+.ember-app.light .nav-item:hover,
+.ember-app.light .nav-item.active {
+  color: var(--text);
+}
+
+.ember-app.light .trial-badge,
+.ember-app.light .nav-item.active > span,
+.ember-app.light .transaction-mark.income,
+.ember-app.light .empty-page > span {
+  color: var(--accent-text);
+}
+
+.ember-app.light .balance-section p strong,
+.ember-app.light .metric small.up,
+.ember-app.light .amount.income {
+  color: var(--success);
+}
+
+.ember-app.light .metric small.negative {
+  color: var(--danger);
+}
+
+/* Darker orange keeps white button labels readable in light mode. */
+.ember-app.light .primary-button {
+  border-color: var(--action-background);
+  color: #ffffff;
+  background: var(--action-background);
+}
+
+.ember-app.light .primary-button:hover:not(:disabled) {
+  border-color: var(--action-hover);
+  background: var(--action-hover);
+}
+
+.ember-app.light .secondary-button,
+.ember-app.light .language-button,
+.ember-app.light .theme-button {
+  color: var(--text);
+  background: var(--surface-raised);
+}
+
+.ember-app.light .more-button {
+  color: var(--muted);
+}
+
+.ember-app.light .text-button {
+  color: var(--accent-text);
+}
+
+.ember-app.light .text-button:hover {
+  color: #82260d;
+}
+
+.ember-app.light .delete-transaction {
+  border-color: var(--border);
+  color: var(--danger);
+  background: var(--surface);
+}
+
+.ember-app.light .avatar {
+  color: #ffffff;
+  background: linear-gradient(145deg, #b5411f, #8d2c15);
+}
+
+/* Match both the form and native controls to the selected app theme. */
+.ember-app.light .transaction-form label {
+  color: var(--text);
+}
+
+.ember-app.light .transaction-form input,
+.ember-app.light .transaction-form select {
+  border-color: var(--field-border);
+  color: var(--text);
+  background: var(--surface);
+  caret-color: var(--text);
+}
+
+.ember-app.light .transaction-form select option {
+  color: var(--text);
+  background: var(--surface);
+}
+
+.ember-app.light .transaction-form input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.ember-app.light .transaction-form input:disabled,
+.ember-app.light .transaction-form select:disabled {
+  color: var(--muted);
+  background: var(--soft);
+  opacity: 1;
+}
+
+.ember-app.light .transaction-form .auth-error {
+  border-color: #e6a5ae;
+  color: var(--danger);
+  background: #fff0f2;
+}
+
+.ember-app.light :is(button, input, select):focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 3px;
+}
+

@@ -147,6 +147,74 @@ public sealed class TransactionsController : ControllerBase
             response);
     }
 
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<TransactionResponse>> Update(
+        Guid id,
+        UpdateTransactionRequest request)
+    {
+        if (request.Amount <= 0)
+        {
+            ModelState.AddModelError(
+                nameof(request.Amount),
+                "Το ποσό πρέπει να είναι μεγαλύτερο από μηδέν.");
+        }
+
+        if (!Enum.IsDefined(typeof(TransactionType), request.Type))
+        {
+            ModelState.AddModelError(
+                nameof(request.Type),
+                "Ο τύπος συναλλαγής δεν είναι έγκυρος.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var userId = _userManager.GetUserId(User);
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        var transaction = await _db.Transactions
+            .SingleOrDefaultAsync(item =>
+                item.Id == id && item.UserId == userId);
+
+        if (transaction is null)
+        {
+            return NotFound();
+        }
+
+        transaction.Description = request.Description.Trim();
+        transaction.Amount = request.Amount;
+        transaction.Type = request.Type;
+        transaction.Category = string.IsNullOrWhiteSpace(request.Category)
+            ? "Άλλο"
+            : request.Category.Trim();
+
+        // Αν δεν σταλούν αυτά τα πεδία, κρατάμε τις υπάρχουσες τιμές.
+        transaction.OccurredAtUtc = request.OccurredAtUtc?.ToUniversalTime()
+            ?? transaction.OccurredAtUtc;
+        transaction.IsRecurring = request.IsRecurring
+            ?? transaction.IsRecurring;
+
+        await _db.SaveChangesAsync();
+
+        var response = new TransactionResponse(
+            transaction.Id,
+            transaction.Description,
+            transaction.Amount,
+            transaction.Type,
+            transaction.Category,
+            transaction.OccurredAtUtc,
+            transaction.Currency,
+            transaction.IsRecurring);
+
+        return Ok(response);
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -189,6 +257,24 @@ public sealed class CreateTransactionRequest
     public DateTime? OccurredAtUtc { get; set; }
 
     public bool IsRecurring { get; set; }
+}
+
+public sealed class UpdateTransactionRequest
+{
+    [Required]
+    [MaxLength(160)]
+    public string Description { get; set; } = string.Empty;
+
+    public decimal Amount { get; set; }
+
+    public TransactionType Type { get; set; }
+
+    [MaxLength(80)]
+    public string? Category { get; set; }
+
+    public DateTime? OccurredAtUtc { get; set; }
+
+    public bool? IsRecurring { get; set; }
 }
 
 public sealed record TransactionResponse(

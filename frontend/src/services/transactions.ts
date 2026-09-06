@@ -22,6 +22,15 @@ export interface CreateTransactionInput {
   isRecurring?: boolean
 }
 
+export interface UpdateTransactionInput {
+  description: string
+  amount: number
+  type: TransactionType
+  category?: string
+  occurredAtUtc?: string
+  isRecurring?: boolean
+}
+
 async function getErrorMessage(response: Response) {
   const data = await response.json().catch(() => null)
 
@@ -55,6 +64,29 @@ export async function createTransaction(
     credentials: 'include',
     body: JSON.stringify(input),
   })
+
+  if (!response.ok) {
+    throw new Error(await getErrorMessage(response))
+  }
+
+  return response.json()
+}
+
+export async function updateTransaction(
+  id: string,
+  input: UpdateTransactionInput,
+): Promise<Transaction> {
+  const response = await fetch(
+    `${API_URL}/api/transactions/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(input),
+    },
+  )
 
   if (!response.ok) {
     throw new Error(await getErrorMessage(response))
