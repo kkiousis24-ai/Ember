@@ -9,6 +9,13 @@ import {
   type Transaction,
   type TransactionType,
 } from './services/transactions'
+import {
+  createBudget,
+  deleteBudget,
+  getBudgets,
+  updateBudget,
+  type Budget,
+} from './services/budgets'
 import './App.css'
 
 const navigation = [
@@ -55,6 +62,17 @@ function createEmptyTransaction() {
   }
 }
 
+function createEmptyBudget() {
+  const now = new Date()
+
+  return {
+    category: '',
+    limitAmount: '',
+    month: now.getMonth() + 1,
+    year: now.getFullYear(),
+  }
+}
+
 type AccessUser = AuthUser & {
   hasActiveAccess?: boolean
 }
@@ -79,6 +97,14 @@ function App() {
   const [isSavingTransaction, setIsSavingTransaction] = useState(false)
   const saveInProgress = useRef(false)
   const transactionModalRef = useRef<HTMLElement | null>(null)
+  const [budgets, setBudgets] = useState<Budget[]>([])
+  const [isLoadingBudgets, setIsLoadingBudgets] = useState(false)
+  const [showBudgetForm, setShowBudgetForm] = useState(false)
+  const [budgetError, setBudgetError] = useState('')
+  const [newBudget, setNewBudget] = useState(createEmptyBudget())
+  const [editingBudget, setEditingBudget] = useState<Budget | null>(null)
+  const [isSavingBudget, setIsSavingBudget] = useState(false)
+  const budgetSaveInProgress = useRef(false)
 
   useEffect(() => {
     getCurrentUser()
@@ -107,6 +133,20 @@ function App() {
       .then(setTransactions)
       .catch(() => setTransactions([]))
       .finally(() => setIsLoadingTransactions(false))
+  }, [currentUser])
+
+  useEffect(() => {
+    if (!currentUser) {
+      setBudgets([])
+      return
+    }
+
+    setIsLoadingBudgets(true)
+
+    getBudgets()
+      .then(setBudgets)
+      .catch(() => setBudgets([]))
+      .finally(() => setIsLoadingBudgets(false))
   }, [currentUser])
 
   useEffect(() => {
@@ -292,6 +332,101 @@ function App() {
     setTransactions((items) => items.filter((item) => item.id !== id))
   }
 
+  function openCreateBudgetForm() {
+    if (budgetSaveInProgress.current) return
+
+    setEditingBudget(null)
+    setNewBudget(createEmptyBudget())
+    setBudgetError('')
+    setShowBudgetForm(true)
+  }
+
+  function openEditBudgetForm(budget: Budget) {
+    if (budgetSaveInProgress.current) return
+
+    setEditingBudget(budget)
+    setNewBudget({
+      category: budget.category,
+      limitAmount: String(budget.limitAmount),
+      month: budget.month,
+      year: budget.year,
+    })
+    setBudgetError('')
+    setShowBudgetForm(true)
+  }
+
+  function closeBudgetForm() {
+    if (budgetSaveInProgress.current) return
+
+    resetBudgetForm()
+  }
+
+  function resetBudgetForm() {
+    setShowBudgetForm(false)
+    setEditingBudget(null)
+    setNewBudget(createEmptyBudget())
+    setBudgetError('')
+  }
+
+  async function handleSaveBudget(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (budgetSaveInProgress.current) return
+
+    setBudgetError('')
+
+    const limitAmount = Number(newBudget.limitAmount.replace(',', '.'))
+
+    if (!newBudget.category.trim()) {
+      setBudgetError('Γράψε μια κατηγορία.')
+      return
+    }
+
+    if (!Number.isFinite(limitAmount) || limitAmount <= 0) {
+      setBudgetError('Το όριο πρέπει να είναι μεγαλύτερο από μηδέν.')
+      return
+    }
+
+    budgetSaveInProgress.current = true
+    setIsSavingBudget(true)
+
+    try {
+      const input = {
+        category: newBudget.category.trim(),
+        limitAmount,
+        month: newBudget.month,
+        year: newBudget.year,
+      }
+
+      if (editingBudget) {
+        const budget = await updateBudget(editingBudget.id, input)
+
+        setBudgets((items) =>
+          items.map((item) => (item.id === budget.id ? budget : item)),
+        )
+      } else {
+        const budget = await createBudget(input)
+        setBudgets((items) => [budget, ...items])
+      }
+
+      resetBudgetForm()
+    } catch (error) {
+      setBudgetError(
+        error instanceof Error
+          ? error.message
+          : 'Δεν ήταν δυνατή η αποθήκευση.',
+      )
+    } finally {
+      budgetSaveInProgress.current = false
+      setIsSavingBudget(false)
+    }
+  }
+
+  async function handleDeleteBudget(id: string) {
+    await deleteBudget(id)
+    setBudgets((items) => items.filter((item) => item.id !== id))
+  }
+
   if (checkingSession) {
     return <div className="session-loading">Φόρτωση Ember...</div>
   }
@@ -335,6 +470,22 @@ function App() {
     currentUser.fullName || currentUser.email.split('@')[0]
   const accountPlan =
     (currentUser as AuthUser & { plan?: string }).plan || 'Free trial'
+  const totalBudgetLimit = budgets.reduce(
+    (total, budget) => total + budget.limitAmount,
+    0,
+  )
+  const totalBudgetSpent = budgets.reduce(
+    (total, budget) => total + budget.spentAmount,
+    0,
+  )
+  const totalBudgetRemaining = totalBudgetLimit - totalBudgetSpent
+  const budgetUsagePercentage = totalBudgetLimit
+    ? Math.round((totalBudgetSpent / totalBudgetLimit) * 100)
+    : 0
+  const currentMonthLabel = new Intl.DateTimeFormat('el-GR', {
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date())
 
   const normalizedSearch = transactionSearch.trim().toLocaleLowerCase('el-GR')
   const filteredTransactions = transactions.filter((transaction) => {
@@ -635,6 +786,135 @@ function App() {
     </section>
   )
 
+  const budgetsPage = (
+    <>
+      <section className="balance-section budgets-header">
+        <div>
+          <span className="section-label">ΠΡΟΫΠΟΛΟΓΙΣΜΟΙ · {currentMonthLabel}</span>
+          <h2>{formatCurrency(totalBudgetRemaining)}</h2>
+          <p>
+            Υπόλοιπο από όριο {formatCurrency(totalBudgetLimit)} και έξοδα{' '}
+            {formatCurrency(totalBudgetSpent)}
+          </p>
+        </div>
+
+        <button
+          className="primary-button"
+          onClick={openCreateBudgetForm}
+          disabled={isSavingBudget}
+        >
+          + Νέος προϋπολογισμός
+        </button>
+      </section>
+
+      <section className="metrics">
+        <div className="metric">
+          <span>Συνολικό όριο</span>
+          <strong>{formatCurrency(totalBudgetLimit)}</strong>
+          <small>{budgets.length} κατηγορίες</small>
+        </div>
+
+        <div className="metric">
+          <span>Έχουν δαπανηθεί</span>
+          <strong>{formatCurrency(totalBudgetSpent)}</strong>
+          <small>{budgetUsagePercentage}% χρήση</small>
+        </div>
+
+        <div className="metric">
+          <span>Υπόλοιπο</span>
+          <strong>{formatCurrency(totalBudgetRemaining)}</strong>
+          <small className={totalBudgetRemaining >= 0 ? 'up' : 'negative'}>
+            {totalBudgetRemaining >= 0 ? 'Εντός ορίου' : 'Πάνω από το όριο'}
+          </small>
+        </div>
+      </section>
+
+      <section className="budget-grid">
+        {isLoadingBudgets && (
+          <p className="transactions-empty">Φόρτωση προϋπολογισμών...</p>
+        )}
+
+        {!isLoadingBudgets && budgets.length === 0 && (
+          <div className="panel budget-empty">
+            <span>◫</span>
+            <h3>Δεν υπάρχουν προϋπολογισμοί</h3>
+            <p>Δημιούργησε το πρώτο όριο για μια κατηγορία εξόδων.</p>
+            <button className="primary-button" onClick={openCreateBudgetForm}>
+              + Δημιουργία προϋπολογισμού
+            </button>
+          </div>
+        )}
+
+        {!isLoadingBudgets &&
+          budgets.map((budget) => (
+            <article className="panel budget-card" key={budget.id}>
+              <div className="budget-card-heading">
+                <div>
+                  <span className="section-label">ΚΑΤΗΓΟΡΙΑ</span>
+                  <h3>{budget.category}</h3>
+                </div>
+
+                <div className="budget-card-actions">
+                  <button
+                    className="more-button"
+                    onClick={() => openEditBudgetForm(budget)}
+                    disabled={isSavingBudget}
+                    aria-label={`Επεξεργασία προϋπολογισμού ${budget.category}`}
+                  >
+                    ✎
+                  </button>
+                  <button
+                    className="delete-transaction"
+                    onClick={() => handleDeleteBudget(budget.id)}
+                    disabled={isSavingBudget}
+                    aria-label={`Διαγραφή προϋπολογισμού ${budget.category}`}
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              <div className="budget-amounts">
+                <div>
+                  <span>Δαπάνες</span>
+                  <strong>{formatCurrency(budget.spentAmount)}</strong>
+                </div>
+                <div>
+                  <span>Όριο</span>
+                  <strong>{formatCurrency(budget.limitAmount)}</strong>
+                </div>
+              </div>
+
+              <div className="budget-progress" aria-label="Πρόοδος προϋπολογισμού">
+                <span
+                  className={
+                    budget.progressPercentage > 100 ? 'over-budget' : undefined
+                  }
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      Math.max(0, budget.progressPercentage),
+                    )}%`,
+                  }}
+                />
+              </div>
+
+              <div className="budget-card-footer">
+                <span>{Math.round(budget.progressPercentage)}% χρήση</span>
+                <strong
+                  className={
+                    budget.remainingAmount >= 0 ? 'income-text' : 'negative'
+                  }
+                >
+                  {formatCurrency(budget.remainingAmount)} υπόλοιπο
+                </strong>
+              </div>
+            </article>
+          ))}
+      </section>
+    </>
+  )
+
   const settingsPage = (
     <section className="settings-grid">
       <article className="panel settings-panel">
@@ -801,6 +1081,8 @@ function App() {
           ? dashboard
           : activePage === 'Συναλλαγές'
             ? transactionsPage
+            : activePage === 'Προϋπολογισμοί'
+              ? budgetsPage
             : activePage === 'Ρυθμίσεις'
               ? settingsPage
               : (
@@ -821,6 +1103,110 @@ function App() {
                 </section>
               )}
       </main>
+
+      {showBudgetForm && (
+        <div className="modal-backdrop" onMouseDown={closeBudgetForm}>
+          <section
+            className="transaction-modal budget-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="budget-form-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="panel-heading">
+              <div>
+                <span className="section-label">
+                  {editingBudget ? 'ΕΠΕΞΕΡΓΑΣΙΑ' : 'ΝΕΑ ΚΑΤΑΧΩΡΗΣΗ'}
+                </span>
+                <h3 id="budget-form-title">
+                  {editingBudget
+                    ? 'Επεξεργασία προϋπολογισμού'
+                    : 'Νέος προϋπολογισμός'}
+                </h3>
+              </div>
+
+              <button
+                className="more-button"
+                type="button"
+                onClick={closeBudgetForm}
+                disabled={isSavingBudget}
+                aria-label="Κλείσιμο φόρμας"
+              >
+                ×
+              </button>
+            </div>
+
+            <form className="transaction-form" onSubmit={handleSaveBudget}>
+              <label htmlFor="budget-category">Κατηγορία</label>
+              <input
+                id="budget-category"
+                value={newBudget.category}
+                onChange={(event) =>
+                  setNewBudget((form) => ({
+                    ...form,
+                    category: event.target.value,
+                  }))
+                }
+                placeholder="π.χ. Λογισμικό"
+                maxLength={80}
+                disabled={isSavingBudget}
+                required
+              />
+
+              <label htmlFor="budget-limit">Μηνιαίο όριο</label>
+              <input
+                id="budget-limit"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={newBudget.limitAmount}
+                onChange={(event) =>
+                  setNewBudget((form) => ({
+                    ...form,
+                    limitAmount: event.target.value,
+                  }))
+                }
+                placeholder="0,00"
+                disabled={isSavingBudget}
+                required
+              />
+
+              <div className="budget-period-note">
+                <span>Περίοδος</span>
+                <strong>{currentMonthLabel}</strong>
+              </div>
+
+              {budgetError && (
+                <p className="auth-error" role="alert">
+                  {budgetError}
+                </p>
+              )}
+
+              <div className="modal-actions">
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={closeBudgetForm}
+                  disabled={isSavingBudget}
+                >
+                  Ακύρωση
+                </button>
+                <button
+                  className="primary-button"
+                  type="submit"
+                  disabled={isSavingBudget}
+                >
+                  {isSavingBudget
+                    ? 'Αποθήκευση...'
+                    : editingBudget
+                      ? 'Αποθήκευση αλλαγών'
+                      : 'Αποθήκευση'}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
 
       {showTransactionForm && (
         <div

@@ -65,10 +65,11 @@ app.UseAuthentication();
  */
 app.Use(async (context, next) =>
 {
-    var isTransactionsRequest =
-        context.Request.Path.StartsWithSegments("/api/transactions");
+    var isFinancialRequest =
+        context.Request.Path.StartsWithSegments("/api/transactions") ||
+        context.Request.Path.StartsWithSegments("/api/budgets");
 
-    if (!isTransactionsRequest ||
+    if (!isFinancialRequest ||
         context.User.Identity?.IsAuthenticated != true)
     {
         await next();
@@ -170,4 +171,3 @@ app.MapGet("/api/health", () =>
     }));
 
 app.Run();
-
