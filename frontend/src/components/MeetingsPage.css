@@ -1,0 +1,451 @@
+.meetings-page {
+  --meeting-danger: #ff9aab;
+  --meeting-success: #6ad4aa;
+  --meeting-accent-text: var(--accent-bright);
+  color: var(--text);
+}
+
+.ember-app.light .meetings-page {
+  --meeting-danger: #ab243e;
+  --meeting-success: #137348;
+  --meeting-accent-text: #aa3416;
+}
+
+.meetings-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 28px;
+}
+
+.meetings-heading h2 {
+  margin: 10px 0;
+  font-size: clamp(23px, 3vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.8px;
+}
+
+.meetings-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.meetings-heading > button {
+  flex-shrink: 0;
+}
+
+.meetings-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.meetings-stat {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+}
+
+.meetings-stat span {
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.meetings-stat strong {
+  color: var(--text);
+  font-size: 26px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.meetings-list-panel {
+  padding: 24px;
+}
+
+.meetings-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.meetings-search {
+  min-width: 0;
+  flex: 1;
+}
+
+.meetings-search input,
+.meeting-field input,
+.meeting-field select,
+.meeting-field textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  background: var(--surface-raised);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.meetings-search input::placeholder,
+.meeting-field input::placeholder,
+.meeting-field textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.meetings-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 18px 0;
+}
+
+.meeting-filter {
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.meeting-filter:hover,
+.meeting-filter.active {
+  color: var(--meeting-accent-text);
+  border-color: var(--meeting-accent-text);
+  background: var(--accent-soft);
+}
+
+.meetings-count,
+.meetings-loading {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 18px 0;
+}
+
+.meeting-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.meeting-card {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 18px;
+  padding: 22px 0;
+  border-top: 1px solid var(--border);
+}
+
+.meeting-date-tile {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 3px;
+  align-self: start;
+  min-height: 66px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--meeting-accent-text);
+  background: var(--accent-soft);
+}
+
+.meeting-date-tile span {
+  font-size: 11px;
+}
+
+.meeting-date-tile strong {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.meeting-card-body {
+  min-width: 0;
+}
+
+.meeting-card-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.meeting-card-title h3 {
+  margin: 0;
+  flex: 1;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.meeting-status {
+  flex-shrink: 0;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+}
+
+.meeting-status.status-1 {
+  color: var(--meeting-accent-text);
+  background: var(--accent-soft);
+}
+
+.meeting-status.status-2 {
+  color: var(--meeting-success);
+  background: rgba(56, 201, 140, 0.1);
+}
+
+.meeting-status.status-3 {
+  color: var(--muted);
+  background: var(--soft);
+}
+
+.meeting-time,
+.meeting-location,
+.meeting-notes {
+  color: var(--muted);
+  margin: 9px 0 0;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.meeting-notes {
+  white-space: pre-wrap;
+}
+
+.meeting-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.meeting-card-actions button {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.meeting-delete-button {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--meeting-danger);
+  background: transparent;
+  cursor: pointer;
+}
+
+.meeting-delete-button:hover:not(:disabled) {
+  border-color: var(--meeting-danger);
+}
+
+.meetings-empty {
+  display: grid;
+  justify-items: center;
+  padding: 35px 12px;
+  text-align: center;
+}
+
+.meeting-empty-mark {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  color: var(--meeting-accent-text);
+  background: var(--accent-soft);
+  font-size: 24px;
+}
+
+.meetings-empty h3 {
+  margin: 16px 0 8px;
+  font-size: 17px;
+}
+
+.meetings-empty p {
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.meeting-notice,
+.meeting-load-error,
+.meeting-form-error {
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.meeting-notice {
+  color: var(--meeting-success);
+  background: rgba(56, 201, 140, 0.08);
+}
+
+.meeting-load-error,
+.meeting-form-error {
+  color: var(--meeting-danger);
+  background: rgba(220, 65, 85, 0.08);
+}
+
+.meeting-load-error p {
+  margin: 0 0 12px;
+}
+
+.meeting-dialog {
+  width: min(580px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  overflow-y: auto;
+  padding: 26px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+  font: inherit;
+}
+
+.meeting-dialog::backdrop {
+  background: rgba(6, 9, 18, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.ember-app.dark .meeting-dialog {
+  color-scheme: dark;
+}
+
+.ember-app.light .meeting-dialog {
+  color-scheme: light;
+}
+
+.meeting-dialog-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.meeting-dialog-heading h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+.meetings-form {
+  display: grid;
+  gap: 16px;
+}
+
+.meeting-field {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.meeting-field > span {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.meeting-field textarea {
+  resize: vertical;
+  min-height: 90px;
+  max-height: 260px;
+}
+
+.meeting-date-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.meeting-timezone-hint {
+  margin: -5px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.meeting-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.meeting-danger-button {
+  padding: 10px 15px;
+  border: 1px solid #ab243e;
+  border-radius: 10px;
+  color: #fff;
+  background: #ab243e;
+  cursor: pointer;
+}
+
+.meeting-delete-question {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.meetings-page button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.meetings-page :is(button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--meeting-accent-text);
+  outline-offset: 3px;
+}
+
+.meeting-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 1050px) {
+  .meetings-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 600px) {
+  .meetings-heading,
+  .meetings-list-panel {
+    padding: 20px 16px;
+  }
+  .meetings-stats { gap: 8px; }
+  .meetings-stat { padding: 14px 10px; }
+  .meetings-stat span { font-size: 11px; }
+  .meetings-stat strong { font-size: 22px; }
+  .meetings-heading > button { width: 100%; }
+  .meeting-card { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; }
+  .meeting-date-tile { min-height: 58px; border-radius: 12px; }
+  .meeting-card-title { align-items: flex-start; flex-direction: column; gap: 7px; }
+  .meeting-dialog { padding: 22px 18px; }
+  .meeting-date-fields { grid-template-columns: 1fr; }
+  .meeting-dialog-actions > button { flex: 1; }
+  .meeting-filter { padding: 8px 10px; font-size: 11px; }
+}

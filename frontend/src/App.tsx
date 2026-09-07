@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import AuthScreen from './components/AuthScreen'
+import MeetingsPage from './components/MeetingsPage'
 import { getCurrentUser, logout, type AuthUser } from './services/auth'
 import {
   createTransaction,
@@ -2206,8 +2207,10 @@ function App() {
                   ? goalsPage
                   : activePage === 'Ομάδα'
                     ? teamPage
-                    : activePage === 'Συνδρομή'
-                      ? subscriptionPage
+                    : activePage === 'Συναντήσεις'
+                      ? <MeetingsPage key={currentUser.email} language={language} />
+                      : activePage === 'Συνδρομή'
+                        ? subscriptionPage
             : activePage === 'Ρυθμίσεις'
               ? settingsPage
               : (
