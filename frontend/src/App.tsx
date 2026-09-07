@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import AuthScreen from './components/AuthScreen'
-import MeetingsPage from './components/MeetingsPage.tsx'
+import MeetingsPage from './components/MeetingsPage'
 import { getCurrentUser, logout, type AuthUser } from './services/auth'
 import {
   createTransaction,
@@ -140,6 +140,11 @@ const englishText: Record<string, string> = {
   'ΑΝΑΛΥΣΗ': 'ANALYTICS',
   'Ανάλυση εξόδων': 'Expense analysis',
   'Έξοδα ανά κατηγορία': 'Expenses by category',
+  'Αυτός ο μήνας': 'This month',
+  'Τελευταίο τρίμηνο': 'Last quarter',
+  'Αυτό το έτος': 'This year',
+  'Όλο το ιστορικό': 'All history',
+  'Εξαγωγή CSV': 'Export CSV',
   'Δεν υπάρχουν έξοδα για ανάλυση.': 'There are no expenses to analyze yet.',
   'Συνολικές συναλλαγές': 'Total transactions',
   'Μέσο έξοδο': 'Average expense',
@@ -427,6 +432,7 @@ function App() {
   const teamSaveInProgress = useRef(false)
   const [subscriptionMessage, setSubscriptionMessage] = useState('')
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
+  const [reportPeriod, setReportPeriod] = useState<'month' | 'quarter' | 'year' | 'all'>('month')
 
   useEffect(() => {
     getCurrentUser()
@@ -1176,7 +1182,35 @@ function App() {
       .includes(normalizedSearch)
   })
 
-  const expenseByCategory = transactions
+  const reportPeriodStart = (() => {
+    if (reportPeriod === 'all') return null
+    const start = new Date(now)
+    if (reportPeriod === 'month') start.setDate(1)
+    if (reportPeriod === 'quarter') start.setMonth(start.getMonth() - 2, 1)
+    if (reportPeriod === 'year') start.setMonth(0, 1)
+    start.setHours(0, 0, 0, 0)
+    return start
+  })()
+  const reportTransactions = transactions.filter((transaction) => {
+    if (!reportPeriodStart) return true
+    return new Date(transaction.occurredAtUtc) >= reportPeriodStart
+  })
+  const reportExpense = reportTransactions.filter((transaction) => transaction.type === 2).reduce((sum, transaction) => sum + transaction.amount, 0)
+
+  function exportReport() {
+    const header = ['Ημερομηνία', 'Περιγραφή', 'Τύπος', 'Κατηγορία', 'Ποσό', 'Νόμισμα']
+    const rows = reportTransactions.map((transaction) => [
+      new Date(transaction.occurredAtUtc).toLocaleDateString('el-GR'),
+      transaction.description, transaction.type === 1 ? 'Έσοδο' : 'Έξοδο',
+      transaction.category, transaction.amount.toFixed(2), transaction.currency,
+    ])
+    const csv = [header, ...rows].map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(';')).join('\r\n')
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a'); link.href = url; link.download = `ember-report-${reportPeriod}.csv`; link.click(); URL.revokeObjectURL(url)
+  }
+
+  const expenseByCategory = reportTransactions
     .filter((transaction) => transaction.type === 2)
     .reduce<Record<string, number>>((totals, transaction) => {
       const category = transaction.category || 'Άλλο'
@@ -1188,7 +1222,7 @@ function App() {
     ([, firstAmount], [, secondAmount]) => secondAmount - firstAmount,
   )
   const largestCategory = reportCategories[0]
-  const averageExpense = totalExpense / Math.max(1, transactions.filter((transaction) => transaction.type === 2).length)
+  const averageExpense = reportExpense / Math.max(1, reportTransactions.filter((transaction) => transaction.type === 2).length)
   const maxCategoryAmount = Math.max(
     1,
     ...reportCategories.map(([, amount]) => amount),
@@ -1498,13 +1532,21 @@ function App() {
           <h2>{t('Ανάλυση εξόδων')}</h2>
           <p>{t('Έξοδα ανά κατηγορία')}</p>
         </div>
-        <div className="report-period-pill">{currentMonthLabel}</div>
+        <div className="report-actions">
+          <select className="report-period-select" value={reportPeriod} onChange={(event) => setReportPeriod(event.target.value as typeof reportPeriod)}>
+            <option value="month">{t('Αυτός ο μήνας')}</option>
+            <option value="quarter">{t('Τελευταίο τρίμηνο')}</option>
+            <option value="year">{t('Αυτό το έτος')}</option>
+            <option value="all">{t('Όλο το ιστορικό')}</option>
+          </select>
+          <button className="secondary-button" type="button" onClick={exportReport}>{t('Εξαγωγή CSV')}</button>
+        </div>
       </section>
 
       <section className="metrics">
         <div className="metric">
           <span>{t('Συνολικές συναλλαγές')}</span>
-          <strong>{transactions.length}</strong>
+          <strong>{reportTransactions.length}</strong>
           <small>{t('Αυτόν τον μήνα')}</small>
         </div>
         <div className="metric">
@@ -1525,7 +1567,7 @@ function App() {
             <span className="section-label">{t('ΑΝΑΛΥΣΗ')}</span>
             <h3>{t('Έξοδα ανά κατηγορία')}</h3>
           </div>
-          <strong className="report-total">{formatCurrency(totalExpense)}</strong>
+          <strong className="report-total">{formatCurrency(reportExpense)}</strong>
         </div>
 
         {reportCategories.length === 0 ? (

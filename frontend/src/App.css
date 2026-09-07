@@ -153,7 +153,7 @@ button {
 
 .workspace > div strong {
   overflow: hidden;
-  font-size: 11px;
+  font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2037,4 +2037,43 @@ main > * {
     grid-column: 2;
     text-align: left;
   }
+}
+.report-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.report-period-select {
+  height: 38px;
+  padding: 0 34px 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  background: var(--surface);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+}
+
+.report-period-select:hover,
+.report-period-select:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+@media (max-width: 700px) {
+  .report-actions {
+    width: 100%;
+  }
+
+  .report-actions > * {
+    flex: 1;
+  }
+}
+.report-period-select,
+.report-period-select option {
+  font-size: 15px !important;
+  font-weight: 500;
 }
