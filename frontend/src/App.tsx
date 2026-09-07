@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import AuthScreen from './components/AuthScreen'
-import MeetingsPage from './components/MeetingsPage'
+import MeetingsPage from './components/MeetingsPage.tsx'
 import { getCurrentUser, logout, type AuthUser } from './services/auth'
 import {
   createTransaction,

@@ -15,6 +15,12 @@ interface MeetingsPageProps {
 }
 
 type MeetingFilter = 'all' | 'upcoming' | 'today' | 'completed' | 'cancelled'
+
+const calendarWeekdays = ['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ']
+
+function calendarKey(date: Date): string {
+  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-')
+}
 type MeetingModal =
   | { kind: 'create' }
   | { kind: 'edit'; meeting: Meeting }
@@ -106,6 +112,12 @@ const english: Record<string, string> = {
   'Ο τίτλος μπορεί να έχει έως 160 χαρακτήρες.': 'Titles can have up to 160 characters.',
   'Η τοποθεσία μπορεί να έχει έως 240 χαρακτήρες.': 'Locations can have up to 240 characters.',
   'Οι σημειώσεις μπορούν να έχουν έως 1000 χαρακτήρες.': 'Notes can have up to 1,000 characters.',
+  'ΗΜΕΡΟΛΟΓΙΟ': 'CALENDAR',
+  'Πρόγραμμα συναντήσεων': 'Meeting schedule',
+  'Προηγούμενος μήνας': 'Previous month',
+  'Επόμενος μήνας': 'Next month',
+  'Υπάρχει συνάντηση': 'Meeting scheduled',
+  'Δεν υπάρχει συνάντηση αυτή την ημέρα.': 'No meeting on this day.',
 }
 
 function localInputValue(date: Date): string {
@@ -208,6 +220,8 @@ export default function MeetingsPage({ language }: MeetingsPageProps) {
   const [notice, setNotice] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [now, setNow] = useState(Date.now)
+  const [calendarMonth, setCalendarMonth] = useState(() => { const date = new Date(); return new Date(date.getFullYear(), date.getMonth(), 1) })
+  const [selectedCalendarDay, setSelectedCalendarDay] = useState<string | null>(null)
   const operationLock = useRef(false)
   const isMounted = useRef(false)
   const locale = language === 'en' ? 'en-GB' : 'el-GR'
@@ -422,6 +436,18 @@ export default function MeetingsPage({ language }: MeetingsPageProps) {
   const countLabel = language === 'en'
     ? visibleMeetings.length + (visibleMeetings.length === 1 ? ' meeting' : ' meetings')
     : visibleMeetings.length + (visibleMeetings.length === 1 ? ' συνάντηση' : ' συναντήσεις')
+  const calendarTitle = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(calendarMonth)
+  const calendarDays = (() => {
+    const firstDay = (calendarMonth.getDay() + 6) % 7
+    const daysInMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0).getDate()
+    return Array.from({ length: firstDay + daysInMonth }, (_, index) => index < firstDay ? null : new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), index - firstDay + 1))
+  })()
+  const meetingsByDay = meetings.reduce<Record<string, Meeting[]>>((groups, meeting) => {
+    const key = calendarKey(new Date(meeting.startsAtUtc))
+    ;(groups[key] ??= []).push(meeting)
+    return groups
+  }, {})
+  const selectedDayMeetings = selectedCalendarDay ? meetingsByDay[selectedCalendarDay] ?? [] : []
 
   return (
     <div className="meetings-page">
@@ -563,6 +589,35 @@ export default function MeetingsPage({ language }: MeetingsPageProps) {
               </ul>
             )}
           </>
+        )}
+      </section>
+
+      <section className="panel meeting-calendar-panel">
+        <div className="meeting-calendar-heading">
+          <div>
+            <span className="section-label">{t('ΗΜΕΡΟΛΟΓΙΟ')}</span>
+            <h3>{t('Πρόγραμμα συναντήσεων')}</h3>
+          </div>
+          <div className="meeting-calendar-controls">
+            <button className="calendar-arrow" type="button" aria-label={t('Προηγούμενος μήνας')} onClick={() => { setCalendarMonth((date) => new Date(date.getFullYear(), date.getMonth() - 1, 1)); setSelectedCalendarDay(null) }}>‹</button>
+            <strong>{calendarTitle}</strong>
+            <button className="calendar-arrow" type="button" aria-label={t('Επόμενος μήνας')} onClick={() => { setCalendarMonth((date) => new Date(date.getFullYear(), date.getMonth() + 1, 1)); setSelectedCalendarDay(null) }}>›</button>
+          </div>
+        </div>
+        <div className="meeting-calendar-grid">
+          {calendarWeekdays.map((day) => <span className="calendar-weekday" key={day}>{language === 'en' ? day.slice(0, 3) : day}</span>)}
+          {calendarDays.map((date, index) => date ? (
+            <button key={calendarKey(date)} type="button" className={'calendar-day' + (selectedCalendarDay === calendarKey(date) ? ' selected' : '') + (calendarKey(date) === calendarKey(new Date()) ? ' today' : '')} onClick={() => setSelectedCalendarDay((current) => current === calendarKey(date) ? null : calendarKey(date))}>
+              <span>{date.getDate()}</span>
+              {meetingsByDay[calendarKey(date)]?.length ? <i aria-label={t('Υπάρχει συνάντηση')} /> : null}
+            </button>
+          ) : <span className="calendar-day empty" key={'empty-' + index} />)}
+        </div>
+        {selectedCalendarDay && (
+          <div className="calendar-day-details">
+            <strong>{new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' }).format(new Date(selectedCalendarDay + 'T12:00:00'))}</strong>
+            {selectedDayMeetings.length ? selectedDayMeetings.map((meeting) => <button className="calendar-meeting" type="button" key={meeting.id} onClick={() => openForm(meeting)}><span>{timeLabel(meeting.startsAtUtc)}</span>{meeting.title}</button>) : <p>{t('Δεν υπάρχει συνάντηση αυτή την ημέρα.')}</p>}
+          </div>
         )}
       </section>
 

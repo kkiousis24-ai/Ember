@@ -449,3 +449,242 @@
   .meeting-dialog-actions > button { flex: 1; }
   .meeting-filter { padding: 8px 10px; font-size: 11px; }
 }
+
+.meeting-calendar-panel {
+  margin-top: 18px;
+  padding: 24px;
+}
+
+.meeting-calendar-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.meeting-calendar-heading h3 {
+  margin: 6px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.meeting-calendar-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.calendar-arrow {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  background: var(--surface-raised);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.meeting-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.calendar-weekday {
+  padding: 5px 0 8px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.calendar-day {
+  position: relative;
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  color: var(--text);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+}
+
+.calendar-day:hover,
+.calendar-day.selected {
+  border-color: var(--meeting-accent-text);
+  background: var(--accent-soft);
+}
+
+.calendar-day.today span {
+  display: inline-grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border-radius: 50%;
+  color: white;
+  background: var(--accent);
+}
+
+.calendar-day.empty { pointer-events: none; }
+
+.calendar-day i {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateX(-50%);
+}
+
+.calendar-day-details {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.calendar-day-details > strong {
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.calendar-day-details > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.calendar-meeting {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  background: var(--surface-raised);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+}
+
+.calendar-meeting span {
+  color: var(--meeting-accent-text);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 600px) {
+  .meeting-calendar-panel { padding: 20px 16px; }
+  .meeting-calendar-heading { align-items: flex-start; flex-direction: column; }
+  .meeting-calendar-controls { width: 100%; justify-content: space-between; }
+}
+
+/* Compact rounded calendar */
+.meeting-calendar-panel {
+  padding: 22px 24px 24px;
+  border-radius: 20px;
+}
+
+.meeting-calendar-heading {
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.meeting-calendar-heading h3 {
+  font-size: 15px;
+  letter-spacing: -0.2px;
+}
+
+.meeting-calendar-controls {
+  gap: 9px;
+  font-size: 12px;
+}
+
+.calendar-arrow {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--muted);
+  background: transparent;
+  font-size: 18px;
+}
+
+.calendar-arrow:hover {
+  color: var(--meeting-accent-text);
+  background: var(--accent-soft);
+}
+
+.meeting-calendar-grid {
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.calendar-weekday {
+  padding: 3px 0 8px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.calendar-day {
+  min-height: 34px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--muted);
+  font-size: 11px;
+  transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+
+.calendar-day:hover {
+  color: var(--text);
+  background: var(--soft);
+  transform: scale(1.06);
+}
+
+.calendar-day.selected {
+  color: var(--meeting-accent-text);
+  border: 0;
+  background: var(--accent-soft);
+}
+
+.calendar-day.today span {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 4px 12px rgba(255, 99, 51, .22);
+}
+
+.calendar-day.today:hover span { background: var(--accent-bright); }
+
+.calendar-day i {
+  bottom: 1px;
+  width: 4px;
+  height: 4px;
+}
+
+.calendar-day.today i {
+  bottom: -1px;
+  border: 1px solid var(--surface);
+  background: #fff;
+}
+
+.calendar-day-details {
+  margin-top: 14px;
+  padding-top: 13px;
+}
